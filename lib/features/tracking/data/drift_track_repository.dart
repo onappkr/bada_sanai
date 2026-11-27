@@ -171,4 +171,27 @@ class DriftTrackRepository implements TrackRepository {
         ),
     ];
   }
+
+  static SavedTrack _toSaved(Track t) => SavedTrack(
+        id: t.id,
+        startedAt: t.startedAt,
+        endedAt: t.endedAt ?? t.startedAt,
+        distanceM: t.distanceM,
+        encodedPolyline: t.encodedPolyline ?? '',
+      );
+
+  @override
+  Stream<List<SavedTrack>> watchSavedTracks() {
+    final q = _db.select(_db.tracks)
+      ..where((t) => t.status.equalsValue(TrackStatus.saved))
+      ..orderBy([(t) => OrderingTerm.desc(t.startedAt)]);
+    return q.watch().map((rows) => rows.map(_toSaved).toList());
+  }
+
+  @override
+  Stream<SavedTrack?> watchSavedTrack(String trackId) {
+    final q = _db.select(_db.tracks)
+      ..where((t) => t.id.equals(trackId) & t.status.equalsValue(TrackStatus.saved));
+    return q.watchSingleOrNull().map((r) => r == null ? null : _toSaved(r));
+  }
 }

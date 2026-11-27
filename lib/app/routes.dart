@@ -14,6 +14,8 @@ abstract final class Routes {
   static const arrival = '/arrival'; // S10
   static const tracking = '/tracking'; // S11
   static const candidates = '/tracking/:trackId/candidates'; // S12
+  static const tracks = '/tracks'; // 저장된 경로 목록
+  static const trackDetail = '/tracks/:id'; // 저장된 경로 상세
   static const species = '/species'; // S13
   static const forecast = '/forecast'; // S14
   static const share = '/share/:pointId'; // S15
@@ -28,6 +30,7 @@ abstract final class Routes {
   static String logEditOf(String id) => '/logs/$id/edit';
   static String pointDetailOf(String id) => '/points/$id';
   static String pointEditOf(String id) => '/points/$id/edit';
+  static String trackDetailOf(String id) => '/tracks/$id';
   static String candidatesOf(String trackId) => '/tracking/$trackId/candidates';
   static String shareOf(String pointId) => '/share/$pointId';
 }

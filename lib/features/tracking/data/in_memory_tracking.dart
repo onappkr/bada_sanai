@@ -42,10 +42,38 @@ class InMemoryTrackRepository implements TrackRepository {
   Future<List<LocationSample>> bufferedSamples(String trackId) async =>
       List.of(_buffer[trackId] ?? const []);
 
+  final Map<String, SavedTrack> _saved = {};
+
+  List<SavedTrack> _savedList() =>
+      _saved.values.toList()..sort((a, b) => b.startedAt.compareTo(a.startedAt));
+
+  @override
+  Stream<List<SavedTrack>> watchSavedTracks() async* {
+    yield _savedList();
+    await for (final _ in _changes.stream) {
+      yield _savedList();
+    }
+  }
+
+  @override
+  Stream<SavedTrack?> watchSavedTrack(String trackId) async* {
+    yield _saved[trackId];
+    await for (final _ in _changes.stream) {
+      yield _saved[trackId];
+    }
+  }
+
   @override
   Future<void> finish(String trackId, TrackResult result) async {
     _recordingStart.remove(trackId);
     _buffer.remove(trackId);
+    _saved[trackId] = SavedTrack(
+      id: trackId,
+      startedAt: result.startedAt,
+      endedAt: result.endedAt,
+      distanceM: result.distanceM,
+      encodedPolyline: result.encodedPolyline,
+    );
     _candidates[trackId] = [
       for (final c in result.candidates)
         _Candidate('cand-${++_seq}', trackId, c.lat, c.lng, c.dwell),
@@ -55,6 +83,7 @@ class InMemoryTrackRepository implements TrackRepository {
 
   @override
   Future<void> discard(String trackId) async {
+    _saved.remove(trackId);
     _recordingStart.remove(trackId);
     _buffer.remove(trackId);
     _candidates.remove(trackId);

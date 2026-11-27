@@ -9,6 +9,8 @@ import '../features/home/presentation/home_screen.dart';
 import '../features/permissions/presentation/permissions_screen.dart';
 import '../features/tracking/presentation/arrival_screen.dart';
 import '../features/tracking/presentation/candidates_screen.dart';
+import '../features/tracking/presentation/track_detail_screen.dart';
+import '../features/tracking/presentation/track_list_screen.dart';
 import '../features/tracking/presentation/tracking_screen.dart';
 import '../features/settings/presentation/onboarding_screen.dart';
 import '../features/settings/presentation/settings_screen.dart';
@@ -155,6 +157,16 @@ GoRouter createRouter({
           path: Routes.candidates,
           parentNavigatorKey: _rootKey,
           builder: (c, s) => CandidatesScreen(trackId: s.pathParameters['trackId']!),
+        ),
+        GoRoute(
+          path: Routes.tracks,
+          parentNavigatorKey: _rootKey,
+          builder: (c, s) => const TrackListScreen(),
+        ),
+        GoRoute(
+          path: Routes.trackDetail,
+          parentNavigatorKey: _rootKey,
+          builder: (c, s) => TrackDetailScreen(id: s.pathParameters['id']!),
         ),
         GoRoute(
           path: Routes.species,

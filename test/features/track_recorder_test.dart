@@ -54,6 +54,12 @@ class FakeRepo implements TrackRepository {
   Future<void> dismissCandidate(String candidateId) async {}
 
   @override
+  Stream<List<SavedTrack>> watchSavedTracks() => const Stream.empty();
+
+  @override
+  Stream<SavedTrack?> watchSavedTrack(String trackId) => const Stream.empty();
+
+  @override
   Future<List<InterruptedTrack>> findInterrupted() async => const [];
 
   @override
