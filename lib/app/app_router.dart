@@ -27,6 +27,7 @@ import '../features/team/presentation/team_detail_screen.dart';
 import '../features/team/presentation/team_list_screen.dart';
 import '../features/team/presentation/trip_detail_screen.dart';
 import '../features/team/presentation/trip_form_screen.dart';
+import '../features/insights/presentation/insights_screen.dart';
 import 'onboarding_redirect.dart';
 import 'routes.dart';
 
@@ -205,6 +206,11 @@ GoRouter createRouter({
           path: Routes.species,
           parentNavigatorKey: _rootKey,
           builder: (c, s) => const SpeciesScreen(),
+        ),
+        GoRoute(
+          path: Routes.insights,
+          parentNavigatorKey: _rootKey,
+          builder: (c, s) => const InsightsScreen(),
         ),
         GoRoute(
           path: Routes.forecast,

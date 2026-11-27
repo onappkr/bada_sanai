@@ -8,7 +8,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 개요
 
-"바다 사나이": 루어·원투·찍낚시·보트 낚시 기록 앱(Flutter, Android/iOS). 1차는 서버 없이 기기 안(SQLite)에서만 동작한다. 일지, 포인트, 사진, 경로 기록, 포인트 공유 링크, 백업·복원, 이 시기 내 어종이 구현되어 있다. 팀·정산(2차)은 **서버 없이 기기 안에서 한 사람(총무)이 이름으로 팀·출조·비용을 정리해 정산하는 방식**으로 구현되어 있다(`features/team/`; 팀원이 각자 앱으로 참여·승인하는 부분은 서버가 필요해 없다). 데이터 기반 추천(3차)은 설계만 있다. `web_viewer/`는 앱이 없는 사람이 공유 링크를 여는 정적 페이지다.
+"바다 사나이": 루어·원투·찍낚시·보트 낚시 기록 앱(Flutter, Android/iOS). 1차는 서버 없이 기기 안(SQLite)에서만 동작한다. 일지, 포인트, 사진, 경로 기록, 포인트 공유 링크, 백업·복원, 이 시기 내 어종이 구현되어 있다. 팀·정산(2차)은 **서버 없이 기기 안에서 한 사람(총무)이 이름으로 팀·출조·비용을 정리해 정산하는 방식**으로 구현되어 있다(`features/team/`; 팀원이 각자 앱으로 참여·승인하는 부분은 서버가 필요해 없다). 데이터 기반 추천(3차)은 **내 일지만으로 계산하는 분석·추천**(`features/insights/`: 시간대·달·바람별 성적, 지금 가기 좋은 포인트)까지 구현되어 있고, 다른 사람의 기록을 합친 추천과 해역 통계는 서버·데이터가 필요해 없다. `web_viewer/`는 앱이 없는 사람이 공유 링크를 여는 정적 페이지다.
 
 ## 명령
 
@@ -43,6 +43,7 @@ flutter build web -t lib/main_preview.dart   # 화면 미리보기(아래 참고
 - 공유 링크: `share/data/share_link_codec.dart`(JSON → raw deflate → base64url, `#v=1&d=...`)는 `web_viewer/codec.js`와 **같은 형식**이어야 한다. 형식을 바꾸면 `v`를 올리고 양쪽을 함께 고친다. 압축은 웹에서도 돌도록 `dart:io` 대신 `archive` 패키지를 쓴다.
 - 백업: `backup/domain/backup_archive.dart`가 zip(`backup.json` + `photos/*`)을 만들고 읽는다(경로 탈출·용량 검증). 기록 형식은 `backup_codec.dart` v2(`photos` 메타데이터 추가, v1 JSON도 복원 가능). 복원은 id별 최신 병합이고 사진은 기기에 같은 id가 없고 주인이 있고 파일이 있을 때만 연결한다. 사진 파일 접근은 `BackupPhotoFiles` 포트(어댑터는 `PhotoStore`).
 - 팀·정산(`features/team`): 계산은 순수 로직(`split_calculator.dart`, `settlement.dart`의 `settle`), 저장은 `TeamRepository`(Drift·메모리 구현이 같은 계약 시험 `test/features/team_repository_test.dart`을 통과). 테이블 `teams/team_members/trips/trip_expenses`는 스키마 v2에서 추가됐다. 정산을 마감한 출조는 비용을 못 고치고(다시 열 수 있음), 비용에 쓰인 사람은 참여자에서 못 뺀다. 팀 기록은 아직 백업에 포함되지 않고, 전체 삭제에는 포함된다.
+- 분석·추천(`insights/domain/insights.dart`, 순수): 출조당 마릿수로 묶어 비교하고 표본이 3번 미만이면 `reliable=false`(화면에서 흐리게). 포인트 추천은 일지가 5개 이상일 때만, 비슷한 시기(앞뒤 1달)·같은 시간대에 가중하고 전체 평균 쪽으로 당겨(`priorWeight`) 한두 번의 우연한 대박이 순위를 좌우하지 않게 한다.
 - 사진: DB에는 상대 경로만, 파일은 앱 문서 폴더 `photos/`. 작성 화면에서 고른 사진은 저장 버튼을 누를 때에야 파일로 기록한다.
 
 ## 화면 미리보기
