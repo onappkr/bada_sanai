@@ -108,7 +108,8 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
           const SizedBox(height: 24),
           Text('알아두세요', style: text.titleSmall),
           const SizedBox(height: 4),
-          const Text('• 사진이 많으면 파일이 커질 수 있어요(사진 한 장은 보통 400KB 이하).\n'
+          const Text('• 팀·정산 기록은 아직 백업에 들어 있지 않아요.\n'
+              '• 사진이 많으면 파일이 커질 수 있어요(사진 한 장은 보통 400KB 이하).\n'
               '• 백업 파일에는 위치 정보가 그대로 들어 있으니 믿을 수 있는 곳에만 보관하세요.'),
         ],
       ),

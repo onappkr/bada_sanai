@@ -22,6 +22,11 @@ import '../features/point/presentation/point_detail_screen.dart';
 import '../features/point/presentation/point_form_screen.dart';
 import '../features/point/presentation/point_list_screen.dart';
 import '../features/point/presentation/point_map_screen.dart';
+import '../features/team/presentation/expense_form_screen.dart';
+import '../features/team/presentation/team_detail_screen.dart';
+import '../features/team/presentation/team_list_screen.dart';
+import '../features/team/presentation/trip_detail_screen.dart';
+import '../features/team/presentation/trip_form_screen.dart';
 import 'onboarding_redirect.dart';
 import 'routes.dart';
 
@@ -133,6 +138,43 @@ GoRouter createRouter({
           path: Routes.pointEdit,
           parentNavigatorKey: _rootKey,
           builder: (c, s) => PointFormScreen(id: s.pathParameters['id']),
+        ),
+        GoRoute(
+          path: Routes.teams,
+          parentNavigatorKey: _rootKey,
+          builder: (c, s) => const TeamListScreen(),
+        ),
+        GoRoute(
+          path: Routes.team,
+          parentNavigatorKey: _rootKey,
+          builder: (c, s) => TeamDetailScreen(id: s.pathParameters['id']!),
+        ),
+        GoRoute(
+          path: Routes.tripNew,
+          parentNavigatorKey: _rootKey,
+          builder: (c, s) => TripFormScreen.create(teamId: s.pathParameters['id']!),
+        ),
+        GoRoute(
+          path: Routes.trip,
+          parentNavigatorKey: _rootKey,
+          builder: (c, s) => TripDetailScreen(id: s.pathParameters['id']!),
+        ),
+        GoRoute(
+          path: Routes.tripEdit,
+          parentNavigatorKey: _rootKey,
+          builder: (c, s) => TripFormScreen.edit(tripId: s.pathParameters['id']!),
+        ),
+        // '/expenses/new'는 '/expenses/:expenseId'보다 먼저 선언한다.
+        GoRoute(
+          path: Routes.expenseNew,
+          parentNavigatorKey: _rootKey,
+          builder: (c, s) => ExpenseFormScreen(tripId: s.pathParameters['id']!),
+        ),
+        GoRoute(
+          path: Routes.expenseEdit,
+          parentNavigatorKey: _rootKey,
+          builder: (c, s) => ExpenseFormScreen(
+              tripId: s.pathParameters['id']!, expenseId: s.pathParameters['expenseId']),
         ),
         GoRoute(
           path: Routes.arrival,
