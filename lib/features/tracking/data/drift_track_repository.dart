@@ -131,4 +131,44 @@ class DriftTrackRepository implements TrackRepository {
   Future<void> dismissCandidate(String candidateId) =>
       (_db.update(_db.pointCandidates)..where((t) => t.id.equals(candidateId)))
           .write(const PointCandidatesCompanion(status: Value(CandidateStatus.discarded)));
+
+  @override
+  Future<List<InterruptedTrack>> findInterrupted() async {
+    final tracks = await (_db.select(_db.tracks)
+          ..where((t) => t.status.equalsValue(TrackStatus.recording))
+          ..orderBy([(t) => OrderingTerm.asc(t.startedAt)]))
+        .get();
+    final result = <InterruptedTrack>[];
+    for (final t in tracks) {
+      final count = _db.trackPoints.id.count();
+      final n = await (_db.selectOnly(_db.trackPoints)
+            ..addColumns([count])
+            ..where(_db.trackPoints.trackId.equals(t.id)))
+          .map((r) => r.read(count) ?? 0)
+          .getSingle();
+      result.add(InterruptedTrack(id: t.id, startedAt: t.startedAt, sampleCount: n));
+    }
+    return result;
+  }
+
+  @override
+  Future<List<LocationSample>> bufferedSamples(String trackId) async {
+    final rows = await (_db.select(_db.trackPoints)
+          ..where((t) => t.trackId.equals(trackId))
+          ..orderBy([
+            (t) => OrderingTerm.asc(t.recordedAt),
+            (t) => OrderingTerm.asc(t.id),
+          ]))
+        .get();
+    return [
+      for (final r in rows)
+        LocationSample(
+          lat: r.lat,
+          lng: r.lng,
+          time: r.recordedAt,
+          accuracyM: r.accuracyM,
+          speedMps: r.speedMps,
+        ),
+    ];
+  }
 }

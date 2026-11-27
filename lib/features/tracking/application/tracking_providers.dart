@@ -42,3 +42,11 @@ final pendingCandidatesProvider = StreamProvider.autoDispose
     .family<List<CandidateView>, String>((ref, trackId) {
   return ref.watch(trackRepositoryProvider).watchPendingCandidates(trackId);
 });
+
+/// 앱이 중간에 꺼져 끝맺지 못한 기록. 지금 기록 중인 트랙은 제외한다.
+final interruptedTracksProvider =
+    FutureProvider.autoDispose<List<InterruptedTrack>>((ref) async {
+  final activeId = ref.watch(trackingProvider.select((s) => s.trackId));
+  final all = await ref.watch(trackRepositoryProvider).findInterrupted();
+  return [for (final t in all) if (t.id != activeId) t];
+});

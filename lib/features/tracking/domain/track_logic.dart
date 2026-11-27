@@ -132,6 +132,22 @@ class TrackResult {
   final List<CandidateDraft> candidates;
 }
 
+/// 이미 걸러진 점들로 기록 결과를 만든다(경로 단순화·후보 감지).
+/// 기록을 끝낼 때와, 중단된 기록을 복구할 때 같은 규칙을 쓰려고 따로 뒀다.
+TrackResult summarizeTrack(DateTime startedAt, List<LocationSample> samples) {
+  final simplified = simplifyPolyline(
+    [for (final s in samples) s.point],
+    TrackConfig.simplifyToleranceM,
+  );
+  return TrackResult(
+    startedAt: startedAt,
+    endedAt: samples.isEmpty ? startedAt : samples.last.time,
+    distanceM: totalDistanceM(samples),
+    encodedPolyline: PolylineCodec.encode(simplified),
+    candidates: detectCandidates(samples),
+  );
+}
+
 /// 한 번의 경로 기록. 점을 받아 걸러 쌓고, 끝나면 결과를 만든다.
 class TrackSession {
   TrackSession({required this.startedAt});
@@ -154,17 +170,5 @@ class TrackSession {
     return true;
   }
 
-  TrackResult finish() {
-    final simplified = simplifyPolyline(
-      [for (final s in _samples) s.point],
-      TrackConfig.simplifyToleranceM,
-    );
-    return TrackResult(
-      startedAt: startedAt,
-      endedAt: last?.time ?? startedAt,
-      distanceM: distanceM,
-      encodedPolyline: PolylineCodec.encode(simplified),
-      candidates: detectCandidates(_samples),
-    );
-  }
+  TrackResult finish() => summarizeTrack(startedAt, _samples);
 }

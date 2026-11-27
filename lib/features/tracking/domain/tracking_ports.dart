@@ -17,6 +17,21 @@ class CandidateView {
   final Duration dwell;
 }
 
+/// 앱이 중간에 종료되어 끝맺지 못한 기록.
+class InterruptedTrack {
+  const InterruptedTrack({
+    required this.id,
+    required this.startedAt,
+    required this.sampleCount,
+  });
+
+  final String id;
+  final DateTime startedAt;
+
+  /// 임시 버퍼에 남아 있는 점 개수.
+  final int sampleCount;
+}
+
 abstract interface class TrackRepository {
   /// 기록을 시작한다(상태: 기록 중). 새 트랙 id를 돌려준다.
   Future<String> start(DateTime startedAt);
@@ -39,6 +54,12 @@ abstract interface class TrackRepository {
 
   /// 후보를 버린다.
   Future<void> dismissCandidate(String candidateId);
+
+  /// '기록 중' 상태로 남은 트랙(앱이 도중에 꺼진 경우). 오래된 순.
+  Future<List<InterruptedTrack>> findInterrupted();
+
+  /// 임시 버퍼의 점을 기록 순서대로 읽는다.
+  Future<List<LocationSample>> bufferedSamples(String trackId);
 }
 
 /// 위치 측정값을 흘려보내는 원천. 실제 구현은 GPS, 미리보기·테스트는 가짜.

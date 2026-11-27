@@ -18,6 +18,7 @@ import 'features/settings/data/settings_repositories.dart';
 import 'features/share/application/share_providers.dart';
 import 'features/tracking/application/tracking_providers.dart';
 import 'features/tracking/data/in_memory_tracking.dart';
+import 'features/tracking/domain/track_logic.dart';
 import 'features/share/data/in_memory_share_import_repository.dart';
 import 'features/point/data/in_memory_point_repository.dart';
 import 'features/point/domain/point_models.dart' show PointInput, PointSource;
@@ -71,6 +72,22 @@ Future<void> main() async {
     source: PointSource.shared,
   ));
 
+  // 앱이 도중에 꺼진 것처럼 끝나지 않은 기록을 하나 심어 둔다(홈의 복구 안내를 보려고).
+  final tracks = InMemoryTrackRepository(points);
+  final interruptedStart = now.subtract(const Duration(hours: 3));
+  final interruptedId = await tracks.start(interruptedStart);
+  for (var i = 0; i <= 12; i++) {
+    await tracks.addSample(
+      interruptedId,
+      LocationSample(
+        lat: 35.0779,
+        lng: 129.0868,
+        time: interruptedStart.add(Duration(minutes: i)),
+        accuracyM: 8,
+      ),
+    );
+  }
+
   runApp(ProviderScope(
     overrides: [
       catchLogRepositoryProvider.overrideWithValue(repo),
@@ -82,7 +99,7 @@ Future<void> main() async {
           .overrideWithValue(!const bool.fromEnvironment('PREVIEW_ONBOARDING')),
       settingsRepositoryProvider.overrideWithValue(InMemorySettingsRepository()),
       permissionServiceProvider.overrideWithValue(_PreviewPermissionService()),
-      trackRepositoryProvider.overrideWithValue(InMemoryTrackRepository(points)),
+      trackRepositoryProvider.overrideWithValue(tracks),
       locationSourceProvider.overrideWithValue(SimulatedLocationSource()),
       backupRepositoryProvider.overrideWithValue(_PreviewBackupRepository()),
       backupFileGatewayProvider.overrideWithValue(_PreviewBackupGateway()),
