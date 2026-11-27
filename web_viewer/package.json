@@ -1,0 +1,8 @@
+{
+  "name": "bada-sanai-web-viewer",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test"
+  }
+}
