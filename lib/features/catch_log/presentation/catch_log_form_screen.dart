@@ -2,6 +2,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../photo/application/photo_providers.dart';
+import '../../photo/domain/photo_models.dart';
+import '../../photo/presentation/photo_widgets.dart';
 import '../../point/application/point_providers.dart';
 import '../../species/domain/species_catalog.dart';
 import '../application/catch_log_providers.dart';
@@ -31,6 +34,8 @@ class _CatchLogFormScreenState extends ConsumerState<CatchLogFormScreen> {
   Genre _genre = Genre.lure;
   DateTime _fishedAt = DateTime.now();
   String? _pointId;
+  String? _savedId;
+  final List<PhotoSlot> _photos = [];
   final _memo = TextEditingController();
   final Map<String, TextEditingController> _detail = {};
   final List<_ItemRow> _items = [];
@@ -48,7 +53,12 @@ class _CatchLogFormScreenState extends ConsumerState<CatchLogFormScreen> {
 
   Future<void> _load() async {
     final log = await ref.read(catchLogRepositoryProvider).watchOne(widget.id!).first;
+    final photos = await ref
+        .read(photoRepositoryProvider)
+        .watchByOwner(OwnerType.log, widget.id!)
+        .first;
     if (!mounted) return;
+    _photos.addAll(photos.map(PhotoSlot.saved));
     setState(() {
       _loading = false;
       if (log == null) return;
@@ -126,11 +136,21 @@ class _CatchLogFormScreenState extends ConsumerState<CatchLogFormScreen> {
     setState(() => _saving = true);
     try {
       final repo = ref.read(catchLogRepositoryProvider);
-      if (widget.id == null) {
-        await repo.create(input);
+      // 사진 저장이 실패해 다시 누르면 새 일지를 또 만들지 않고 같은 일지를 갱신한다.
+      var id = widget.id ?? _savedId;
+      if (id == null) {
+        id = await repo.create(input);
+        _savedId = id;
       } else {
-        await repo.update(widget.id!, input);
+        await repo.update(id, input);
       }
+      await persistPhotos(
+        repo: ref.read(photoRepositoryProvider),
+        store: ref.read(photoStoreProvider),
+        owner: (type: OwnerType.log, id: id),
+        keepIds: {for (final s in _photos) if (s.id != null) s.id!},
+        picked: [for (final s in _photos) if (s.picked != null) s.picked!],
+      );
       if (mounted) context.pop();
     } catch (e) {
       if (mounted) {
@@ -205,6 +225,13 @@ class _CatchLogFormScreenState extends ConsumerState<CatchLogFormScreen> {
           ),
           if (_items.isEmpty) const Text('꽝이면 비워 두세요.'),
           for (var i = 0; i < _items.length; i++) _itemEditor(i),
+          const SizedBox(height: 16),
+          PhotoEditor(
+            slots: _photos,
+            onAdd: (added) => setState(
+                () => _photos.addAll(added.map(PhotoSlot.picked))),
+            onRemove: (slot) => setState(() => _photos.remove(slot)),
+          ),
           const SizedBox(height: 16),
           TextField(
             controller: _memo,

@@ -5,6 +5,8 @@ import 'app/app.dart';
 import 'features/catch_log/application/catch_log_providers.dart';
 import 'features/catch_log/data/in_memory_catch_log_repository.dart';
 import 'features/catch_log/domain/catch_log_models.dart';
+import 'features/photo/application/photo_providers.dart';
+import 'features/photo/data/in_memory_photo.dart';
 import 'features/point/application/point_providers.dart';
 import 'features/point/data/in_memory_point_repository.dart';
 import 'features/point/domain/point_models.dart' show PointInput, PointSource;
@@ -62,6 +64,8 @@ Future<void> main() async {
     overrides: [
       catchLogRepositoryProvider.overrideWithValue(repo),
       pointRepositoryProvider.overrideWithValue(points),
+      photoRepositoryProvider.overrideWithValue(InMemoryPhotoRepository()),
+      photoStoreProvider.overrideWithValue(InMemoryPhotoStore()),
     ],
     child: const BadaSanaiApp(),
   ));
