@@ -19,11 +19,12 @@ class DriftCatchLogRepository implements CatchLogRepository {
   final DateTime Function() _now;
 
   @override
-  Stream<List<CatchLogView>> watchAll({Genre? genre}) {
+  Stream<List<CatchLogView>> watchAll({Genre? genre, String? pointId}) {
     final q = _db.select(_db.catchLogs)
       ..where((t) => t.deletedAt.isNull())
       ..orderBy([(t) => OrderingTerm.desc(t.fishedAt)]);
     if (genre != null) q.where((t) => t.genre.equalsValue(genre));
+    if (pointId != null) q.where((t) => t.pointId.equals(pointId));
     return q.watch().asyncMap(_withItems);
   }
 

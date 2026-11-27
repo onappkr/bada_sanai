@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../app/routes.dart';
+import '../../point/application/point_providers.dart';
 import '../../species/domain/species_catalog.dart';
 import '../application/catch_log_providers.dart';
 import '../domain/catch_log_models.dart';
@@ -63,19 +64,33 @@ class CatchLogDetailScreen extends ConsumerWidget {
   }
 }
 
-class _Body extends StatelessWidget {
+class _Body extends ConsumerWidget {
   const _Body({required this.log});
 
   final CatchLogView log;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final text = Theme.of(context).textTheme;
+    final pointId = log.pointId;
+    final point = pointId == null ? null : ref.watch(pointProvider(pointId));
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
         Text(log.genre.label, style: text.headlineSmall),
         Text(formatDateTime(log.fishedAt), style: text.bodyMedium),
+        if (pointId != null)
+          ListTile(
+            contentPadding: EdgeInsets.zero,
+            leading: const Icon(Icons.place_outlined),
+            title: Text(point?.value?.name ??
+                (point?.isLoading ?? true ? '' : '삭제된 포인트')),
+            subtitle: const Text('포인트'),
+            trailing: point?.value == null ? null : const Icon(Icons.chevron_right),
+            onTap: point?.value == null
+                ? null
+                : () => context.push(Routes.pointDetailOf(pointId)),
+          ),
         const SizedBox(height: 16),
         Text('조과', style: text.titleMedium),
         if (log.items.isEmpty) const Text('기록된 조과가 없습니다.'),

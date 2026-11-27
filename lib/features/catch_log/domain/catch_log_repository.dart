@@ -3,7 +3,8 @@ import 'catch_log_models.dart';
 /// 일지 저장소 인터페이스. 구현은 data 계층(Drift)에 둔다.
 abstract interface class CatchLogRepository {
   /// 삭제되지 않은 일지를 낚시 시각 내림차순으로 관찰한다.
-  Stream<List<CatchLogView>> watchAll({Genre? genre});
+  /// [genre], [pointId]를 주면 해당 조건의 일지만 관찰한다.
+  Stream<List<CatchLogView>> watchAll({Genre? genre, String? pointId});
 
   Stream<CatchLogView?> watchOne(String id);
 

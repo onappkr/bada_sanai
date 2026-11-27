@@ -3,6 +3,9 @@ import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../app/routes.dart';
+import '../../catch_log/application/catch_log_providers.dart';
+import '../../catch_log/presentation/date_format.dart';
+import '../../species/domain/species_catalog.dart';
 import '../application/point_providers.dart';
 import '../domain/point_models.dart';
 
@@ -66,14 +69,15 @@ class PointDetailScreen extends ConsumerWidget {
   }
 }
 
-class _Body extends StatelessWidget {
+class _Body extends ConsumerWidget {
   const _Body({required this.point});
 
   final PointView point;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final text = Theme.of(context).textTheme;
+    final logs = ref.watch(catchLogsByPointProvider(point.id)).value ?? const [];
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
@@ -96,6 +100,20 @@ class _Body extends StatelessWidget {
           Text('메모', style: text.titleMedium),
           Text(point.memo!),
         ],
+        const SizedBox(height: 16),
+        Text('이 포인트의 일지 (${logs.length})', style: text.titleMedium),
+        if (logs.isEmpty) const Text('연결된 일지가 없습니다.'),
+        for (final l in logs)
+          ListTile(
+            contentPadding: EdgeInsets.zero,
+            title: Text('${l.genre.label} · ${formatDateTime(l.fishedAt)}'),
+            subtitle: Text(l.items.isEmpty
+                ? '조과 없음'
+                : '${l.items.map((e) => speciesLabel(e.speciesCode)).toSet().join(', ')}'
+                    ' · 총 ${l.totalCount}마리'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => context.push(Routes.logDetailOf(l.id)),
+          ),
       ],
     );
   }

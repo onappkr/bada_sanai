@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../point/application/point_providers.dart';
 import '../../species/domain/species_catalog.dart';
 import '../application/catch_log_providers.dart';
 import '../domain/catch_log_models.dart';
@@ -29,6 +30,7 @@ class _ItemRow {
 class _CatchLogFormScreenState extends ConsumerState<CatchLogFormScreen> {
   Genre _genre = Genre.lure;
   DateTime _fishedAt = DateTime.now();
+  String? _pointId;
   final _memo = TextEditingController();
   final Map<String, TextEditingController> _detail = {};
   final List<_ItemRow> _items = [];
@@ -52,6 +54,7 @@ class _CatchLogFormScreenState extends ConsumerState<CatchLogFormScreen> {
       if (log == null) return;
       _genre = log.genre;
       _fishedAt = log.fishedAt.toLocal();
+      _pointId = log.pointId;
       _memo.text = log.memo ?? '';
       for (final f in log.genre.fields) {
         _detail[f.key] = TextEditingController(text: log.genreDetail[f.key] ?? '');
@@ -113,6 +116,7 @@ class _CatchLogFormScreenState extends ConsumerState<CatchLogFormScreen> {
     final input = CatchLogInput(
       genre: _genre,
       fishedAt: _fishedAt,
+      pointId: _pointId,
       memo: _memo.text,
       genreDetail: {
         for (final f in _genre.fields) f.key: _ctrl(f.key).text,
@@ -176,6 +180,8 @@ class _CatchLogFormScreenState extends ConsumerState<CatchLogFormScreen> {
             subtitle: const Text('낚시한 시각'),
             onTap: _pickDateTime,
           ),
+          _pointPicker(),
+          const SizedBox(height: 12),
           for (final f in _genre.fields)
             Padding(
               padding: const EdgeInsets.only(bottom: 12),
@@ -208,6 +214,28 @@ class _CatchLogFormScreenState extends ConsumerState<CatchLogFormScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  /// 포인트 연결. 이미 삭제된 포인트가 연결돼 있으면 선택 안 함으로 보인다.
+  Widget _pointPicker() {
+    final points = ref.watch(pointsProvider).value ?? const [];
+    final selected = points.any((p) => p.id == _pointId) ? _pointId : null;
+    return DropdownButtonFormField<String?>(
+      key: ValueKey('${points.length}/$selected'),
+      initialValue: selected,
+      isExpanded: true,
+      decoration: const InputDecoration(
+        labelText: '포인트',
+        border: OutlineInputBorder(),
+        helperText: '선택하면 포인트 상세에서 이 일지의 장소를 볼 수 있어요',
+      ),
+      items: [
+        const DropdownMenuItem<String?>(value: null, child: Text('선택 안 함')),
+        for (final p in points)
+          DropdownMenuItem<String?>(value: p.id, child: Text(p.name)),
+      ],
+      onChanged: (v) => setState(() => _pointId = v),
     );
   }
 

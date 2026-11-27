@@ -32,6 +32,12 @@ final catchLogsProvider = StreamProvider.autoDispose<List<CatchLogView>>((ref) {
   return ref.watch(catchLogRepositoryProvider).watchAll(genre: genre);
 });
 
+/// 특정 포인트에 연결된 일지(포인트 상세용).
+final catchLogsByPointProvider =
+    StreamProvider.autoDispose.family<List<CatchLogView>, String>((ref, pointId) {
+  return ref.watch(catchLogRepositoryProvider).watchAll(pointId: pointId);
+});
+
 final catchLogProvider =
     StreamProvider.autoDispose.family<CatchLogView?, String>((ref, id) {
   return ref.watch(catchLogRepositoryProvider).watchOne(id);

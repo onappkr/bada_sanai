@@ -9,19 +9,20 @@ class InMemoryCatchLogRepository implements CatchLogRepository {
   final _changes = StreamController<void>.broadcast();
   int _seq = 0;
 
-  List<CatchLogView> _all(Genre? genre) {
+  List<CatchLogView> _all(Genre? genre, String? pointId) {
     final list = _store.values
         .where((e) => genre == null || e.genre == genre)
+        .where((e) => pointId == null || e.pointId == pointId)
         .toList()
       ..sort((a, b) => b.fishedAt.compareTo(a.fishedAt));
     return list;
   }
 
   @override
-  Stream<List<CatchLogView>> watchAll({Genre? genre}) async* {
-    yield _all(genre);
+  Stream<List<CatchLogView>> watchAll({Genre? genre, String? pointId}) async* {
+    yield _all(genre, pointId);
     await for (final _ in _changes.stream) {
-      yield _all(genre);
+      yield _all(genre, pointId);
     }
   }
 

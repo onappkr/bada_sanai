@@ -72,4 +72,25 @@ void main() {
   test('없는 일지 수정은 StateError', () async {
     expect(() => repo.update('none', input()), throwsStateError);
   });
+
+  test('포인트별 일지 조회', () async {
+    await db.into(db.points).insert(PointsCompanion.insert(
+          id: 'p1',
+          name: '방파제',
+          lat: 35,
+          lng: 129,
+          source: PointSource.manual,
+          createdAt: DateTime.utc(2026),
+          updatedAt: DateTime.utc(2026),
+        ));
+    await repo.create(CatchLogInput(
+        genre: Genre.lure, fishedAt: DateTime.utc(2026, 11, 1), pointId: 'p1'));
+    await repo.create(
+        CatchLogInput(genre: Genre.lure, fishedAt: DateTime.utc(2026, 11, 2)));
+
+    final linked = await repo.watchAll(pointId: 'p1').first;
+    expect(linked.length, 1);
+    expect(linked.single.pointId, 'p1');
+    expect((await repo.watchAll().first).length, 2);
+  });
 }

@@ -17,6 +17,7 @@ Future<void> main() async {
   await repo.create(CatchLogInput(
     genre: Genre.lure,
     fishedAt: now.subtract(const Duration(days: 2)),
+    pointId: 'pt-1',
     memo: '새벽 물돌이에 입질이 몰렸다. 바람 강함.',
     genreDetail: const {'lure': '지그헤드 20g, 화이트', 'rod': '9ft ML'},
     items: const [
