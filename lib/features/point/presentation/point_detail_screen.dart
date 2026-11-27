@@ -5,6 +5,9 @@ import 'package:material_ui/material_ui.dart';
 import '../../../app/routes.dart';
 import '../../catch_log/application/catch_log_providers.dart';
 import '../../catch_log/presentation/date_format.dart';
+import '../../photo/application/photo_providers.dart';
+import '../../photo/domain/photo_models.dart';
+import '../../photo/presentation/photo_widgets.dart';
 import '../../species/domain/species_catalog.dart';
 import '../application/point_providers.dart';
 import '../domain/point_models.dart';
@@ -78,6 +81,10 @@ class _Body extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final text = Theme.of(context).textTheme;
     final logs = ref.watch(catchLogsByPointProvider(point.id)).value ?? const [];
+    final photos = ref
+            .watch(photosByOwnerProvider((type: OwnerType.point, id: point.id)))
+            .value ??
+        const [];
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
@@ -99,6 +106,10 @@ class _Body extends ConsumerWidget {
           const SizedBox(height: 8),
           Text('메모', style: text.titleMedium),
           Text(point.memo!),
+        ],
+        if (photos.isNotEmpty) ...[
+          const SizedBox(height: 16),
+          PhotoStrip(photos: photos),
         ],
         const SizedBox(height: 16),
         Text('이 포인트의 일지 (${logs.length})', style: text.titleMedium),

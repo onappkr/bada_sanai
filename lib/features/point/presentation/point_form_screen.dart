@@ -2,6 +2,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../photo/application/photo_providers.dart';
+import '../../photo/domain/photo_models.dart';
+import '../../photo/presentation/photo_widgets.dart';
 import '../application/point_providers.dart';
 import '../domain/point_models.dart';
 
@@ -22,6 +25,8 @@ class _PointFormScreenState extends ConsumerState<PointFormScreen> {
   final _lng = TextEditingController();
   final _memo = TextEditingController();
   Genre? _genre;
+  String? _savedId;
+  final List<PhotoSlot> _photos = [];
   PointSource _source = PointSource.manual;
   bool _loading = false;
   bool _saving = false;
@@ -37,7 +42,12 @@ class _PointFormScreenState extends ConsumerState<PointFormScreen> {
 
   Future<void> _load() async {
     final p = await ref.read(pointRepositoryProvider).watchOne(widget.id!).first;
+    final photos = await ref
+        .read(photoRepositoryProvider)
+        .watchByOwner(OwnerType.point, widget.id!)
+        .first;
     if (!mounted) return;
+    _photos.addAll(photos.map(PhotoSlot.saved));
     setState(() {
       _loading = false;
       if (p == null) return;
@@ -78,11 +88,21 @@ class _PointFormScreenState extends ConsumerState<PointFormScreen> {
     setState(() => _saving = true);
     try {
       final repo = ref.read(pointRepositoryProvider);
-      if (widget.id == null) {
-        await repo.create(input);
+      // 사진 저장이 실패해 다시 누르면 새 포인트를 또 만들지 않고 같은 포인트를 갱신한다.
+      var id = widget.id ?? _savedId;
+      if (id == null) {
+        id = await repo.create(input);
+        _savedId = id;
       } else {
-        await repo.update(widget.id!, input);
+        await repo.update(id, input);
       }
+      await persistPhotos(
+        repo: ref.read(photoRepositoryProvider),
+        store: ref.read(photoStoreProvider),
+        owner: (type: OwnerType.point, id: id),
+        keepIds: {for (final s in _photos) if (s.id != null) s.id!},
+        picked: [for (final s in _photos) if (s.picked != null) s.picked!],
+      );
       if (mounted) context.pop();
     } catch (e) {
       if (mounted) {
@@ -161,6 +181,13 @@ class _PointFormScreenState extends ConsumerState<PointFormScreen> {
                   onSelected: (_) => setState(() => _genre = g),
                 ),
             ],
+          ),
+          const SizedBox(height: 16),
+          PhotoEditor(
+            slots: _photos,
+            onAdd: (added) =>
+                setState(() => _photos.addAll(added.map(PhotoSlot.picked))),
+            onRemove: (slot) => setState(() => _photos.remove(slot)),
           ),
           const SizedBox(height: 16),
           TextField(
