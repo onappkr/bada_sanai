@@ -42,6 +42,13 @@ class FilePhotoStore implements PhotoStore {
   }
 
   @override
+  Future<void> deleteAll() async {
+    final root = await prepare();
+    final dir = Directory(p.join(root.path, 'photos'));
+    if (await dir.exists()) await dir.delete(recursive: true);
+  }
+
+  @override
   ImageProvider imageFor(String path) {
     final root = _root;
     if (root == null) throw StateError('prepare()를 먼저 호출해야 합니다');

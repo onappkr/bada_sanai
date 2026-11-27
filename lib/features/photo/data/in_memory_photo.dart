@@ -22,6 +22,9 @@ class InMemoryPhotoStore implements PhotoStore {
   Future<void> delete(String path) async => files.remove(path);
 
   @override
+  Future<void> deleteAll() async => files.clear();
+
+  @override
   ImageProvider imageFor(String path) => MemoryImage(files[path]!);
 }
 
@@ -35,6 +38,12 @@ class InMemoryPhotoRepository implements PhotoRepository {
           if (r.type == type && r.ownerId == ownerId)
             PhotoView(id: r.id, filePath: r.path),
       ];
+
+  /// 미리보기·테스트용: 모두 지운다.
+  void clear() {
+    _rows.clear();
+    _changes.add(null);
+  }
 
   @override
   Stream<List<PhotoView>> watchByOwner(OwnerType type, String ownerId) async* {

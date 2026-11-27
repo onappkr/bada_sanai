@@ -31,6 +31,15 @@ class InMemoryTrackRepository implements TrackRepository {
     _buffer[trackId]?.add(sample);
   }
 
+  /// 미리보기·테스트용: 모두 지운다.
+  void clear() {
+    _recordingStart.clear();
+    _buffer.clear();
+    _saved.clear();
+    _candidates.clear();
+    _changes.add(null);
+  }
+
   @override
   Future<List<InterruptedTrack>> findInterrupted() async => [
         for (final e in _recordingStart.entries)

@@ -23,6 +23,9 @@ abstract interface class PhotoStore {
 
   Future<void> delete(String path);
 
+  /// 보관 중인 사진 파일을 모두 지운다. 이미 없으면 아무것도 하지 않는다.
+  Future<void> deleteAll();
+
   ImageProvider imageFor(String path);
 }
 

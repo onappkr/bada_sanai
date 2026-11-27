@@ -1,7 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../catch_log/application/catch_log_providers.dart' show databaseProvider;
+import '../data/drift_data_eraser.dart';
 import '../data/settings_repositories.dart';
+import '../domain/data_eraser.dart';
 import '../domain/settings_repository.dart';
 
 final settingsRepositoryProvider = Provider<SettingsRepository>(
@@ -29,3 +31,7 @@ class OnboardingController extends Notifier<bool> {
 
 final onboardingDoneProvider =
     NotifierProvider<OnboardingController, bool>(OnboardingController.new);
+
+final dataEraserProvider = Provider<DataEraser>(
+  (ref) => DriftDataEraser(ref.watch(databaseProvider)),
+);

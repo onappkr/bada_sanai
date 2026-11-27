@@ -62,6 +62,12 @@ class InMemoryCatchLogRepository implements CatchLogRepository {
     _changes.add(null);
   }
 
+  /// 미리보기·테스트용: 모두 지운다.
+  void clear() {
+    _store.clear();
+    _changes.add(null);
+  }
+
   @override
   Future<void> delete(String id) async {
     _store.remove(id);
