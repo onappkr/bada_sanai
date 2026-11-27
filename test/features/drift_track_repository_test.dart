@@ -15,9 +15,10 @@ void main() {
   LocationSample s(int min) =>
       LocationSample(lat: 35.1, lng: 129.0, time: t0.add(Duration(minutes: min)));
 
-  TrackResult result({int candidates = 1}) => TrackResult(
-        startedAt: t0,
-        endedAt: t0.add(const Duration(minutes: 12)),
+  /// [start]에 시작해 12분 뒤 끝난 경로의 결과. 경로마다 시작 시각이 다르면 반드시 그 시각을 넘긴다.
+  TrackResult result({int candidates = 1, DateTime? start}) => TrackResult(
+        startedAt: start ?? t0,
+        endedAt: (start ?? t0).add(const Duration(minutes: 12)),
         distanceM: 120,
         encodedPolyline: '_p~iF~ps|U',
         candidates: [
@@ -123,7 +124,7 @@ void main() {
     final b = await repo.start(t0.add(const Duration(days: 1)));
     final c = await repo.start(t0.add(const Duration(days: 2))); // 끝내지 않음
     await repo.finish(a, result());
-    await repo.finish(b, result());
+    await repo.finish(b, result(start: t0.add(const Duration(days: 1))));
 
     var saved = await repo.watchSavedTracks().first;
     expect(saved.map((e) => e.id), [b, a]);

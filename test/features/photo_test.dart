@@ -15,10 +15,16 @@ PickedPhoto photo(String name) =>
 const owner = (type: OwnerType.log, id: 'log1');
 
 /// 저장소·보관소 계약 테스트. 메모리 구현은 즉시, Drift 구현은 SQLite가 되는 환경에서 돈다.
-void contract(String label, PhotoRepository Function() repo) {
+void contract(String label, PhotoRepository Function() create) {
   group(label, () {
     late InMemoryPhotoStore store;
-    setUp(() => store = InMemoryPhotoStore());
+    late PhotoRepository repoInstance;
+    // 테스트마다 새 저장소와 보관소를 만든다(앞 테스트의 사진이 남아 있으면 결과가 어긋난다).
+    setUp(() {
+      store = InMemoryPhotoStore();
+      repoInstance = create();
+    });
+    PhotoRepository repo() => repoInstance;
 
     Future<List<PhotoView>> current() =>
         repo().watchByOwner(owner.type, owner.id).first;
@@ -56,8 +62,7 @@ void contract(String label, PhotoRepository Function() repo) {
 }
 
 void main() {
-  final mem = InMemoryPhotoRepository();
-  contract('메모리 저장소', () => mem);
+  contract('메모리 저장소', InMemoryPhotoRepository.new);
 
   late AppDatabase db;
   late DriftPhotoRepository drift;
