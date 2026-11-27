@@ -28,48 +28,44 @@ class CatchLogListScreen extends ConsumerWidget {
         label: const Text('기록하기'),
       ),
       body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            child: Row(
+          // 칩 줄은 Row가 아니라 Wrap으로 둔다. ChoiceChip을 폭 제한이 없는 Row에 넣으면
+          // 글자가 한 글자 폭으로 잘려 보이는 문제가 있어(웹에서 확인) 줄바꿈되는 Wrap이 안전하다.
+          Padding(
+            padding: const EdgeInsets.fromLTRB(12, 0, 12, 0),
+            child: Wrap(
+              spacing: 8,
+              runSpacing: 4,
               children: [
-                Padding(
-                  padding: const EdgeInsets.only(right: 8),
-                  child: ChoiceChip(
-                    label: const Text('전체'),
-                    selected: filter == null,
-                    onSelected: (_) =>
-                        ref.read(genreFilterProvider.notifier).select(null),
-                  ),
+                ChoiceChip(
+                  label: const Text('전체'),
+                  selected: filter == null,
+                  onSelected: (_) =>
+                      ref.read(genreFilterProvider.notifier).select(null),
                 ),
                 for (final g in Genre.values)
-                  Padding(
-                    padding: const EdgeInsets.only(right: 8),
-                    child: ChoiceChip(
-                      label: Text(g.label),
-                      selected: filter == g,
-                      onSelected: (_) =>
-                          ref.read(genreFilterProvider.notifier).select(g),
-                    ),
+                  ChoiceChip(
+                    label: Text(g.label),
+                    selected: filter == g,
+                    onSelected: (_) =>
+                        ref.read(genreFilterProvider.notifier).select(g),
                   ),
               ],
             ),
           ),
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
+          Padding(
             padding: const EdgeInsets.fromLTRB(12, 4, 12, 0),
-            child: Row(
+            child: Wrap(
+              spacing: 8,
+              runSpacing: 4,
               children: [
                 for (final p in LogPeriod.values)
-                  Padding(
-                    padding: const EdgeInsets.only(right: 8),
-                    child: ChoiceChip(
-                      label: Text(p.label),
-                      selected: period == p,
-                      onSelected: (_) =>
-                          ref.read(periodFilterProvider.notifier).select(p),
-                    ),
+                  ChoiceChip(
+                    label: Text(p.label),
+                    selected: period == p,
+                    onSelected: (_) =>
+                        ref.read(periodFilterProvider.notifier).select(p),
                   ),
               ],
             ),
