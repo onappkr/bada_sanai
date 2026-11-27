@@ -1,0 +1,39 @@
+name: CI
+
+on:
+  push:
+    branches: [develop, master]
+  pull_request:
+
+# 같은 브랜치에서 새로 푸시하면 이전 실행은 취소한다.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - run: flutter --version
+
+      - run: flutter pub get
+
+      # Drift 생성 코드(app_database.g.dart)가 테이블 정의와 맞는지 확인한다.
+      # 테이블을 고치고 build_runner를 돌리지 않은 채 커밋하면 여기서 실패한다.
+      - name: 생성 코드 최신 여부
+        run: |
+          dart run build_runner build
+          git diff --exit-code -- lib/core/db/app_database.g.dart
+
+      - run: flutter analyze
+
+      # SQLite가 필요한 저장소 테스트와 위젯 테스트까지 모두 돈다.
+      - run: flutter test
