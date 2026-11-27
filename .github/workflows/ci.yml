@@ -50,7 +50,14 @@ jobs:
       - run: flutter analyze
 
       # SQLite가 필요한 저장소 테스트와 위젯 테스트까지 모두 돈다.
-      - run: flutter test
+      # 결과를 JSON 파일로도 남겨, 실패하면 아래 단계가 실패한 테스트를 주석으로 요약한다.
+      - name: flutter test
+        run: flutter test --file-reporter json:test_report.json
+
+      # 로그를 내려받지 않아도 실패한 테스트의 이름과 오류를 볼 수 있게 한다(주석은 공개 API로 읽힌다).
+      - name: 실패한 테스트 요약
+        if: failure()
+        run: python3 tool/ci_annotate_tests.py test_report.json
 
   # 앱이 없는 사람이 보는 정적 웹 뷰어(web_viewer)의 해독 로직 테스트.
   web-viewer:
