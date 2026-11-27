@@ -19,7 +19,7 @@ void main() {
       child: const BadaSanaiApp(),
     ));
     await tester.pumpAndSettle();
-    expect(find.text('S03'), findsOneWidget);
+    expect(find.text('경로 기록 시작'), findsOneWidget);
 
     await tester.tap(find.text('일지'));
     await tester.pumpAndSettle();
