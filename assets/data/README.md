@@ -63,6 +63,12 @@
 
 - `cells`는 `[위도, 경도]` 목록이고, 각 점에서 `cell_radius_m`(미터) 안이면 그 셀에 들어온 것으로 봅니다.
 - 해안선 전체를 OS 지오펜스로 등록할 수 없어서(동시에 등록 가능한 수 제한) 현재 위치에서 가까운 셀 몇 개만
-  등록하는 용도입니다. 셀 데이터는 공공 해안선 데이터에서 만들어야 하며 변환 도구는 아직 없습니다.
+  등록하는 용도입니다. 셀 데이터는 공공 해안선 데이터(WGS84 GeoJSON)에서 변환 도구로 만듭니다.
+
+  ```bash
+  python tool/make_coast_cells.py 해안선.geojson -o assets/data/coast_cells.json --spacing 150 --radius 100 --version 1
+  ```
+
+  원본 데이터의 이용 조건과 좌표계는 직접 확인해야 하며, 도구는 데이터를 만들어 내지 않습니다.
 - 도착 판단 기준값(3분 체류, 같은 구역 6시간 재알림 금지 등)은 `lib/features/arrival/domain/arrival_detector.dart`의
   `ArrivalConfig`에 있고, 해안 현장 테스트 후 조정합니다.
