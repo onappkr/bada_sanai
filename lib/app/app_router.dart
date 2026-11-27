@@ -21,6 +21,7 @@ import '../features/share/presentation/shared_point_screen.dart';
 import '../features/point/presentation/point_detail_screen.dart';
 import '../features/point/presentation/point_form_screen.dart';
 import '../features/point/presentation/point_list_screen.dart';
+import '../features/point/presentation/point_map_screen.dart';
 import 'onboarding_redirect.dart';
 import 'routes.dart';
 
@@ -84,7 +85,7 @@ GoRouter createRouter({
             StatefulShellBranch(routes: [
               GoRoute(
                 path: Routes.map,
-                builder: (c, s) => const PointListScreen(),
+                builder: (c, s) => const PointMapScreen(),
               ),
             ]),
             StatefulShellBranch(routes: [
@@ -113,6 +114,11 @@ GoRouter createRouter({
           builder: (c, s) => const PermissionsScreen(),
         ),
         // '/points/new'는 '/points/:id'보다 먼저 선언해야 한다.
+        GoRoute(
+          path: Routes.pointList,
+          parentNavigatorKey: _rootKey,
+          builder: (c, s) => const PointListScreen(),
+        ),
         GoRoute(
           path: Routes.pointNew,
           parentNavigatorKey: _rootKey,

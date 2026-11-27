@@ -8,6 +8,7 @@ abstract final class Routes {
   static const logDetail = '/logs/:id'; // S06
   static const logEdit = '/logs/:id/edit'; // S05 (수정)
   static const map = '/map'; // S07
+  static const pointList = '/points'; // S07의 목록 보기
   static const pointNew = '/points/new'; // S09 (등록)
   static const pointDetail = '/points/:id'; // S08
   static const pointEdit = '/points/:id/edit'; // S09
