@@ -1,4 +1,5 @@
 import '../../../core/db/app_database.dart' show Genre;
+import 'log_environment.dart';
 
 export '../../../core/db/app_database.dart' show Genre;
 
@@ -61,6 +62,7 @@ class CatchLogInput {
     this.memo,
     this.genreDetail = const {},
     this.items = const [],
+    this.environment,
   });
 
   final Genre genre;
@@ -71,6 +73,10 @@ class CatchLogInput {
   /// 장르별 항목. 값이 비어 있는 키는 저장하지 않는다.
   final Map<String, String> genreDetail;
   final List<CatchItemInput> items;
+
+  /// 일지를 쓸 때 자동으로 붙인 환경(위치·물때·날씨·수온).
+  /// 수정할 때 null이면 이미 저장된 환경을 그대로 둔다.
+  final LogEnvironment? environment;
 }
 
 /// 조회용 일지.
@@ -83,6 +89,7 @@ class CatchLogView {
     required this.items,
     this.pointId,
     this.memo,
+    this.environment,
   });
 
   final String id;
@@ -93,6 +100,9 @@ class CatchLogView {
   final Map<String, String> genreDetail;
   final List<CatchItemInput> items;
 
+  /// 기록할 때 자동으로 붙은 환경. 붙은 것이 없으면 null.
+  final LogEnvironment? environment;
+
   int get totalCount => items.fold(0, (a, b) => a + b.count);
 
   CatchLogInput toInput() => CatchLogInput(
@@ -102,5 +112,6 @@ class CatchLogView {
         memo: memo,
         genreDetail: genreDetail,
         items: items,
+        environment: environment,
       );
 }

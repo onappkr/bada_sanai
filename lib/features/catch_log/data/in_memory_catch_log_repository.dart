@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import '../domain/catch_log_models.dart';
+import '../domain/log_environment.dart';
 import '../domain/catch_log_repository.dart';
 
 /// 메모리 저장소. 화면 미리보기·위젯 테스트용이며 앱을 끄면 데이터가 사라진다.
@@ -34,7 +35,7 @@ class InMemoryCatchLogRepository implements CatchLogRepository {
     }
   }
 
-  CatchLogView _build(String id, CatchLogInput i) => CatchLogView(
+  CatchLogView _build(String id, CatchLogInput i, {LogEnvironment? keepEnvironment}) => CatchLogView(
         id: id,
         genre: i.genre,
         fishedAt: i.fishedAt,
@@ -45,6 +46,7 @@ class InMemoryCatchLogRepository implements CatchLogRepository {
             if (e.value.trim().isNotEmpty) e.key: e.value.trim(),
         },
         items: i.items,
+        environment: i.environment ?? keepEnvironment,
       );
 
   @override
@@ -58,7 +60,7 @@ class InMemoryCatchLogRepository implements CatchLogRepository {
   @override
   Future<void> update(String id, CatchLogInput input) async {
     if (!_store.containsKey(id)) throw StateError('일지를 찾을 수 없습니다: $id');
-    _store[id] = _build(id, input);
+    _store[id] = _build(id, input, keepEnvironment: _store[id]!.environment);
     _changes.add(null);
   }
 

@@ -141,14 +141,6 @@ class _WeatherSection extends StatelessWidget {
 
   final WeatherInfo? weather;
 
-  static const _sky = {
-    'clear': '맑음',
-    'cloudy': '구름 많음',
-    'overcast': '흐림',
-    'rain': '비',
-    'snow': '눈',
-  };
-
   @override
   Widget build(BuildContext context) {
     final w = weather;
@@ -156,7 +148,7 @@ class _WeatherSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text('날씨', style: Theme.of(context).textTheme.titleMedium),
-        _row('하늘', w?.sky == null ? null : (_sky[w!.sky] ?? w.sky)),
+        _row('하늘', skyLabel(w?.sky)),
         _row('기온', w?.tempC == null ? null : '${w!.tempC!.toStringAsFixed(0)}℃'),
         _row(
           '바람',

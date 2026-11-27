@@ -1,6 +1,8 @@
 import 'package:bada_sanai/core/db/app_database.dart';
 import 'package:bada_sanai/features/catch_log/data/drift_catch_log_repository.dart';
 import 'package:bada_sanai/features/catch_log/domain/catch_log_models.dart';
+import 'package:bada_sanai/features/catch_log/domain/log_environment.dart';
+import 'package:bada_sanai/features/forecast/domain/forecast_models.dart';
 import 'package:drift/native.dart';
 import 'package:test/test.dart';
 
@@ -93,4 +95,65 @@ void main() {
     expect(linked.single.pointId, 'p1');
     expect((await repo.watchAll().first).length, 2);
   });
+
+  group('환경 자동 기록(위치·예보)', () {
+    LogEnvironment env({double lat = 35.01}) => LogEnvironment(
+          lat: lat,
+          lng: 129.01,
+          forecast: ForecastBundle(
+            regionCode: 'R-1',
+            date: '2026-11-27',
+            fetchedAt: DateTime.utc(2026, 11, 27, 6),
+            stale: false,
+            tide: const TideInfo(mulddae: 9),
+            seaTempC: 16.4,
+          ),
+        );
+
+    test('새 일지에 붙인 환경이 lat·lng·env 열에 저장되고 다시 읽힌다', () async {
+      final id = await repo.create(input().withEnvironment(env()));
+      final row = await (db.select(db.catchLogs)..where((t) => t.id.equals(id))).getSingle();
+      expect(row.lat, 35.01);
+      expect(row.lng, 129.01);
+      expect(row.env, contains('forecast'));
+
+      final log = (await repo.watchOne(id).first)!;
+      expect(log.environment!.forecast!.tide!.mulddae, 9);
+      expect(log.environment!.forecast!.seaTempC, 16.4);
+    });
+
+    test('환경 없이 만든 일지는 열이 비고 environment는 null', () async {
+      final id = await repo.create(input());
+      final row = await (db.select(db.catchLogs)..where((t) => t.id.equals(id))).getSingle();
+      expect(row.lat, isNull);
+      expect(row.env, '{}');
+      expect((await repo.watchOne(id).first)!.environment, isNull);
+    });
+
+    test('수정할 때 환경을 주지 않으면 저장된 환경을 유지한다', () async {
+      final id = await repo.create(input().withEnvironment(env()));
+      await repo.update(id, input()); // 환경 없는 입력
+      final log = (await repo.watchOne(id).first)!;
+      expect(log.environment!.lat, 35.01);
+      expect(log.environment!.forecast, isNotNull);
+    });
+
+    test('수정할 때 새 환경을 주면 바뀐다', () async {
+      final id = await repo.create(input().withEnvironment(env()));
+      await repo.update(id, input().withEnvironment(env(lat: 36.0)));
+      expect((await repo.watchOne(id).first)!.environment!.lat, 36.0);
+    });
+  });
+}
+
+extension on CatchLogInput {
+  CatchLogInput withEnvironment(LogEnvironment e) => CatchLogInput(
+        genre: genre,
+        fishedAt: fishedAt,
+        pointId: pointId,
+        memo: memo,
+        genreDetail: genreDetail,
+        items: items,
+        environment: e,
+      );
 }

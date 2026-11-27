@@ -7,7 +7,11 @@ import '../domain/tracking_ports.dart';
 /// geolocator 기반 위치 원천. 지금은 앱이 켜져 있는 동안의 기록을 목표로 하고,
 /// Android는 포그라운드 알림을 달아 화면이 꺼져도 이어지게 한다. (실기기 검증 필요)
 class GeolocatorLocationSource implements LocationSource {
-  const GeolocatorLocationSource();
+  /// [requestPermission]이 false면 권한이 없을 때 권한 창을 띄우지 않고 오류를 흘린다
+  /// (일지 저장처럼 사용자가 위치를 기대하지 않는 곳에서 쓴다).
+  const GeolocatorLocationSource({this.requestPermission = true});
+
+  final bool requestPermission;
 
   @override
   Stream<LocationSample> watch() async* {
@@ -15,7 +19,7 @@ class GeolocatorLocationSource implements LocationSource {
       throw StateError('기기의 위치 기능이 꺼져 있어요');
     }
     var permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
+    if (permission == LocationPermission.denied && requestPermission) {
       permission = await Geolocator.requestPermission();
     }
     if (permission == LocationPermission.denied ||
