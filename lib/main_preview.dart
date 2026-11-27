@@ -10,6 +10,10 @@ import 'features/backup/domain/backup_ports.dart';
 import 'features/catch_log/application/catch_log_providers.dart';
 import 'features/catch_log/data/in_memory_catch_log_repository.dart';
 import 'features/catch_log/domain/catch_log_models.dart';
+import 'features/forecast/application/forecast_providers.dart';
+import 'features/forecast/data/forecast_caches.dart';
+import 'features/forecast/domain/forecast_models.dart';
+import 'features/forecast/domain/forecast_ports.dart';
 import 'features/permissions/application/permission_providers.dart';
 import 'features/permissions/domain/permission_service.dart';
 import 'features/photo/application/photo_providers.dart';
@@ -179,6 +183,8 @@ Future<void> main() async {
       trackRepositoryProvider.overrideWithValue(tracks),
       locationSourceProvider.overrideWithValue(SimulatedLocationSource()),
       ruleBookProvider.overrideWith((ref) => sampleBook),
+      forecastSourceProvider.overrideWithValue(_PreviewForecastSource()),
+      forecastCacheProvider.overrideWithValue(InMemoryForecastCache()),
       backupRepositoryProvider.overrideWithValue(_PreviewBackupRepository()),
       backupFileGatewayProvider.overrideWithValue(_PreviewBackupGateway()),
       photoRepositoryProvider.overrideWithValue(photoRepo),
@@ -237,4 +243,30 @@ class _PreviewEraser implements DataEraser {
 
   @override
   Future<void> eraseAll() async => _clear();
+}
+
+/// 미리보기용 예보 원천: 실제 예보가 아니라 화면을 보기 위한 예시 값이다.
+class _PreviewForecastSource implements ForecastSource {
+  @override
+  Future<TideInfo?> tide(RuleRegion region, DateTime date) async {
+    final d = DateTime(date.year, date.month, date.day);
+    return TideInfo(mulddae: 9, extremes: [
+      TideExtreme(time: d.add(const Duration(hours: 3, minutes: 12)), type: TideType.high, heightCm: 245),
+      TideExtreme(time: d.add(const Duration(hours: 9, minutes: 40)), type: TideType.low, heightCm: 31),
+      TideExtreme(time: d.add(const Duration(hours: 15, minutes: 25)), type: TideType.high, heightCm: 238),
+    ]);
+  }
+
+  @override
+  Future<WeatherInfo?> weather(RuleRegion region, DateTime date) async => const WeatherInfo(
+        tempC: 11,
+        windDirDeg: 320,
+        windMps: 5.2,
+        waveM: 0.8,
+        sky: 'clear',
+        precipMm: 0,
+      );
+
+  @override
+  Future<double?> seaTemp(RuleRegion region, DateTime date) async => 16.4;
 }

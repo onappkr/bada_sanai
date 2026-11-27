@@ -37,6 +37,7 @@ flutter build web -t lib/main_preview.dart   # 화면 미리보기(아래 참고
 - `main.dart`가 시작할 때 사진 폴더와 온보딩 완료 여부를 먼저 읽어 provider를 덮어쓴다(라우터와 이미지 표시가 동기 접근을 필요로 해서).
 - 경로 기록: `tracking/domain/track_logic.dart`(점 걸러내기·수집 주기·머문 자리 후보, 순수) → `track_recorder.dart`(세션 진행, 프레임워크 없음) → `application`의 `TrackingController`(앱 전체에서 하나, 화면을 벗어나도 기록 유지). 위치 원천은 `LocationSource` 인터페이스(`GeolocatorLocationSource`).
 - 도착 감지: `arrival/domain/coast_cells.dart`(해안 셀 데이터 읽기·가까운 셀 선택)와 `arrival_detector.dart`(셀 안 3분 체류 → 도착, 같은 구역 6시간 재알림 금지, 측정 공백 처리)는 순수 로직이다. **알림·OS 지오펜스·백그라운드 연결은 아직 없다.** 해안 셀과 어종·해역 규칙 데이터는 `assets/data/`에 비어 있는 파일로 들어 있고(형식은 그곳 README), 실제 값은 전문가·공공 데이터로 채워야 한다.
+- 물때·날씨(S14): `forecast/domain/forecast_service.dart`가 가까운 해역(50km 이내) 확인 → 항목별 캐시(날씨 3h·조석 24h·수온 6h) → 원천 호출(8초 제한, 1회 재시도) → 실패하면 만료된 캐시를 `stale`로 반환한다. **예보 원천(`ForecastSource`)의 실제 공공 API 어댑터는 없고** 기본값 `NoForecastSource`가 "연동 준비 중"을 보여 준다. 어댑터를 만들면 `forecastSourceProvider`만 바꿔 끼우면 된다. 해역의 관측소 ID·격자 좌표는 `region.json`에서 읽는다.
 - 공유 링크: `share/data/share_link_codec.dart`(JSON → raw deflate → base64url, `#v=1&d=...`)는 `web_viewer/codec.js`와 **같은 형식**이어야 한다. 형식을 바꾸면 `v`를 올리고 양쪽을 함께 고친다. 압축은 웹에서도 돌도록 `dart:io` 대신 `archive` 패키지를 쓴다.
 - 사진: DB에는 상대 경로만, 파일은 앱 문서 폴더 `photos/`. 작성 화면에서 고른 사진은 저장 버튼을 누를 때에야 파일로 기록한다.
 
@@ -51,4 +52,4 @@ flutter build web -t lib/main_preview.dart   # 화면 미리보기(아래 참고
 
 ## 아직 없는 것(결정·자료 필요)
 
-지도 SDK 선정, 물때·날씨(S14)와 지역별 어종 추천(외부 API 키·어종 데이터), 해안 도착 자동 감지(해안선 데이터), 앱 링크 자동 열기(공유 도메인), 카카오톡 공유(카카오 앱 키), 앱 ID·서명. 계획 문서는 Claude Docs "바다 사나이 앱 개발 계획서" 탭들.
+지도 SDK 선정, 물때·날씨의 실제 공공 API 어댑터(API 키)와 지역별 어종 추천용 실제 데이터(구조·화면은 있음), 해안 도착 자동 감지(해안선 데이터), 앱 링크 자동 열기(공유 도메인), 카카오톡 공유(카카오 앱 키), 앱 ID·서명. 계획 문서는 Claude Docs "바다 사나이 앱 개발 계획서" 탭들.

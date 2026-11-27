@@ -88,6 +88,7 @@ class HomeScreen extends ConsumerWidget {
                 : Column(children: [for (final l in items) _LogTile(log: l)]),
           ),
           const SizedBox(height: 16),
+          const _ForecastCard(),
           _SeasonCard(top: ref.watch(speciesRankingProvider).value),
         ],
       ),
@@ -235,6 +236,24 @@ class _InterruptedBanner extends ConsumerWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// 물때·날씨 화면(S14)으로 가는 카드.
+class _ForecastCard extends StatelessWidget {
+  const _ForecastCard();
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: ListTile(
+        leading: const Icon(Icons.waves),
+        title: const Text('오늘의 물때·날씨'),
+        subtitle: const Text('내 위치 근처 해역의 물때, 파고, 바람, 수온'),
+        trailing: const Icon(Icons.chevron_right),
+        onTap: () => context.push(Routes.forecast),
       ),
     );
   }
