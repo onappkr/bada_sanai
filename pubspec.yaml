@@ -79,6 +79,7 @@ flutter:
   assets:
     - assets/data/species_rule.json
     - assets/data/region.json
+    - assets/data/coast_cells.json
 
   # To add assets to your application, add an assets section, like this:
   # assets:
