@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../app/routes.dart';
+import '../../share/presentation/paste_link_dialog.dart';
 import '../application/point_providers.dart';
 import '../domain/point_models.dart';
 
@@ -14,7 +15,16 @@ class PointListScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final points = ref.watch(pointsProvider);
     return Scaffold(
-      appBar: AppBar(title: const Text('내 포인트')),
+      appBar: AppBar(
+        title: const Text('내 포인트'),
+        actions: [
+          IconButton(
+            tooltip: '링크로 포인트 받기',
+            icon: const Icon(Icons.link),
+            onPressed: () => showPasteLinkDialog(context),
+          ),
+        ],
+      ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => context.push(Routes.pointNew),
         icon: const Icon(Icons.add_location_alt_outlined),

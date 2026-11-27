@@ -8,6 +8,8 @@ import 'features/catch_log/domain/catch_log_models.dart';
 import 'features/photo/application/photo_providers.dart';
 import 'features/photo/data/in_memory_photo.dart';
 import 'features/point/application/point_providers.dart';
+import 'features/share/application/share_providers.dart';
+import 'features/share/data/in_memory_share_import_repository.dart';
 import 'features/point/data/in_memory_point_repository.dart';
 import 'features/point/domain/point_models.dart' show PointInput, PointSource;
 
@@ -64,6 +66,8 @@ Future<void> main() async {
     overrides: [
       catchLogRepositoryProvider.overrideWithValue(repo),
       pointRepositoryProvider.overrideWithValue(points),
+      shareImportRepositoryProvider
+          .overrideWithValue(InMemoryShareImportRepository(points)),
       photoRepositoryProvider.overrideWithValue(InMemoryPhotoRepository()),
       photoStoreProvider.overrideWithValue(InMemoryPhotoStore()),
     ],

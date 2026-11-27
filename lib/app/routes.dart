@@ -21,6 +21,9 @@ abstract final class Routes {
   static const settings = '/settings'; // S17
   static const backup = '/settings/backup'; // S18
 
+  /// [fragment]는 링크의 `v=1&d=...` 부분. 쿼리 `f`로 넘긴다.
+  static String sharedPointOf(String fragment) =>
+      '/p?f=${Uri.encodeQueryComponent(fragment)}';
   static String logDetailOf(String id) => '/logs/$id';
   static String logEditOf(String id) => '/logs/$id/edit';
   static String pointDetailOf(String id) => '/points/$id';
