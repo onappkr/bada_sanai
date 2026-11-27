@@ -5,12 +5,16 @@ import '../features/catch_log/presentation/catch_log_detail_screen.dart';
 import '../features/catch_log/presentation/catch_log_form_screen.dart';
 import '../features/catch_log/presentation/catch_log_list_screen.dart';
 import '../features/backup/presentation/backup_screen.dart';
+import '../features/permissions/presentation/permissions_screen.dart';
+import '../features/settings/presentation/onboarding_screen.dart';
+import '../features/settings/presentation/settings_screen.dart';
 import '../features/share/presentation/share_sheet_screen.dart';
 import '../features/share/presentation/shared_point_screen.dart';
 import '../features/point/presentation/point_detail_screen.dart';
 import '../features/point/presentation/point_form_screen.dart';
 import '../features/point/presentation/point_list_screen.dart';
 import '../shared/placeholder_screen.dart';
+import 'onboarding_redirect.dart';
 import 'routes.dart';
 
 final _rootKey = GlobalKey<NavigatorState>(debugLabel: 'root');
@@ -33,9 +37,23 @@ PlaceholderScreen _ph(
 Widget _go(BuildContext c, String label, String path) =>
     FilledButton.tonal(onPressed: () => c.push(path), child: Text(label));
 
-GoRouter createRouter({String initialLocation = Routes.home}) => GoRouter(
+/// [onboardingDone]이 거짓이면 온보딩·권한 안내 외의 화면은 온보딩으로 보낸다.
+/// 값이 바뀌면 [refresh]로 알려 다시 판단하게 한다.
+GoRouter createRouter({
+  String initialLocation = Routes.home,
+  bool Function()? onboardingDone,
+  Listenable? refresh,
+}) =>
+    GoRouter(
       navigatorKey: _rootKey,
       initialLocation: initialLocation,
+      refreshListenable: refresh,
+      redirect: onboardingDone == null
+          ? null
+          : (context, state) => onboardingRedirect(
+                done: onboardingDone(),
+                location: state.uri.toString(),
+              ),
       routes: [
         // 탭 4개: 홈 / 일지 / 지도 / 설정
         StatefulShellRoute.indexedStack(
@@ -94,18 +112,7 @@ GoRouter createRouter({String initialLocation = Routes.home}) => GoRouter(
             StatefulShellBranch(routes: [
               GoRoute(
                 path: Routes.settings,
-                builder: (c, s) => Builder(
-                  builder: (c) => _ph(
-                    'S17',
-                    '설정',
-                    '권한 상태, 알림, 단위, 약관, 버전',
-                    actions: [
-                      _go(c, '백업·복원 (S18)', Routes.backup),
-                      _go(c, '권한 안내 (S02)', Routes.permissions),
-                      _go(c, '온보딩 (S01)', Routes.onboarding),
-                    ],
-                  ),
-                ),
+                builder: (c, s) => const SettingsScreen(),
                 routes: [
                   GoRoute(
                     path: 'backup',
@@ -120,13 +127,12 @@ GoRouter createRouter({String initialLocation = Routes.home}) => GoRouter(
         GoRoute(
           path: Routes.onboarding,
           parentNavigatorKey: _rootKey,
-          builder: (c, s) => _ph('S01', '온보딩', '앱 소개 3장, 로그인 없이 시작'),
+          builder: (c, s) => const OnboardingScreen(),
         ),
         GoRoute(
           path: Routes.permissions,
           parentNavigatorKey: _rootKey,
-          builder: (c, s) =>
-              _ph('S02', '권한 안내', '위치·알림·사진 권한을 이유와 함께 요청'),
+          builder: (c, s) => const PermissionsScreen(),
         ),
         // '/points/new'는 '/points/:id'보다 먼저 선언해야 한다.
         GoRoute(
