@@ -16,6 +16,8 @@ import 'features/point/application/point_providers.dart';
 import 'features/settings/application/settings_providers.dart';
 import 'features/settings/data/settings_repositories.dart';
 import 'features/share/application/share_providers.dart';
+import 'features/tracking/application/tracking_providers.dart';
+import 'features/tracking/data/in_memory_tracking.dart';
 import 'features/share/data/in_memory_share_import_repository.dart';
 import 'features/point/data/in_memory_point_repository.dart';
 import 'features/point/domain/point_models.dart' show PointInput, PointSource;
@@ -80,6 +82,8 @@ Future<void> main() async {
           .overrideWithValue(!const bool.fromEnvironment('PREVIEW_ONBOARDING')),
       settingsRepositoryProvider.overrideWithValue(InMemorySettingsRepository()),
       permissionServiceProvider.overrideWithValue(_PreviewPermissionService()),
+      trackRepositoryProvider.overrideWithValue(InMemoryTrackRepository(points)),
+      locationSourceProvider.overrideWithValue(SimulatedLocationSource()),
       backupRepositoryProvider.overrideWithValue(_PreviewBackupRepository()),
       backupFileGatewayProvider.overrideWithValue(_PreviewBackupGateway()),
       photoRepositoryProvider.overrideWithValue(InMemoryPhotoRepository()),

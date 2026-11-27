@@ -6,6 +6,9 @@ import '../features/catch_log/presentation/catch_log_form_screen.dart';
 import '../features/catch_log/presentation/catch_log_list_screen.dart';
 import '../features/backup/presentation/backup_screen.dart';
 import '../features/permissions/presentation/permissions_screen.dart';
+import '../features/tracking/presentation/arrival_screen.dart';
+import '../features/tracking/presentation/candidates_screen.dart';
+import '../features/tracking/presentation/tracking_screen.dart';
 import '../features/settings/presentation/onboarding_screen.dart';
 import '../features/settings/presentation/settings_screen.dart';
 import '../features/share/presentation/share_sheet_screen.dart';
@@ -153,38 +156,17 @@ GoRouter createRouter({
         GoRoute(
           path: Routes.arrival,
           parentNavigatorKey: _rootKey,
-          builder: (c, s) => Builder(
-            builder: (c) => _ph(
-              'S10',
-              '도착 알림 수락',
-              '경로 기록을 시작할까요? 수락·나중에',
-              actions: [_go(c, '수락 → 기록 시작', Routes.tracking)],
-            ),
-          ),
+          builder: (c, s) => const ArrivalScreen(),
         ),
         GoRoute(
           path: Routes.tracking,
           parentNavigatorKey: _rootKey,
-          builder: (c, s) => Builder(
-            builder: (c) => _ph(
-              'S11',
-              '경로 기록 중',
-              '경과 시간, 이동 거리, 일시정지·종료',
-              actions: [
-                _go(c, '종료 → 후보 확정', Routes.candidatesOf('sample')),
-              ],
-            ),
-          ),
+          builder: (c, s) => const TrackingScreen(),
         ),
         GoRoute(
           path: Routes.candidates,
           parentNavigatorKey: _rootKey,
-          builder: (c, s) => _ph(
-            'S12',
-            '포인트 후보 확정',
-            '후보별 이름 입력·저장·버림',
-            params: {'trackId': s.pathParameters['trackId']!},
-          ),
+          builder: (c, s) => CandidatesScreen(trackId: s.pathParameters['trackId']!),
         ),
         GoRoute(
           path: Routes.species,
