@@ -30,6 +30,7 @@ flutter build web -t lib/main_preview.dart   # 화면 미리보기(아래 참고
 
 기능별 폴더(`lib/features/<기능>/`) 안에 계층을 둔다: `domain`(순수 Dart 모델·규칙·저장소 인터페이스) ← `data`(Drift 등 구현) / `application`(Riverpod provider) / `presentation`(화면). 화면은 인터페이스에만 의존하고 구현은 provider에서 주입한다.
 
+- **DB 스키마를 바꿀 때**(사용자 기록이 기기에만 있어 업데이트로 날아가면 복구할 수 없다): `AppDatabase.schemaVersion`을 올리고 `dart run drift_dev schema dump lib/core/db/app_database.dart drift_schemas/` → `dart run drift_dev schema steps drift_schemas/ lib/core/db/schema_versions.dart` → `dart run drift_dev schema generate drift_schemas/ test/generated_migrations/` 순으로 스냅샷을 갱신하고, `schema_versions.dart`의 단계를 채운 뒤 `test/migration_test.dart`에 이전 버전 이행 시험을 더한다. 버전을 올리지 않고 테이블만 바꾸면 CI의 스냅샷 검사가 실패한다. 인덱스는 `tables.dart`의 `@TableIndex`로 선언한다(raw SQL 금지: 스냅샷에 안 잡힌다).
 - `core/db`: Drift 스키마(`tables.dart`)와 `AppDatabase`. 모든 키는 UUID 문자열, 주요 테이블에 `updatedAt`/`deletedAt`을 두어 삭제는 표시만 한다(2차 동기화 대비). 시각은 UTC로 저장하고 화면에서 로컬로 바꾼다.
 - `core/geo`: 좌표 거리, Douglas-Peucker 단순화, Encoded Polyline. `core/config`: 빌드 때 `--dart-define`으로 바꾸는 값(`SHARE_BASE_URL`).
 - `app/`: `go_router` 설정(`app_router.dart`), 경로 상수(`routes.dart`, 화면 ID S01~S18은 주석), 첫 실행 온보딩 리다이렉트(순수 함수 `onboarding_redirect.dart`). 탭 4개(홈·일지·지도·설정)는 `StatefulShellRoute`.

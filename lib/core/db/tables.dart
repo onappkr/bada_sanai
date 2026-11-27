@@ -14,6 +14,7 @@ enum CandidateStatus { pending, saved, discarded }
 enum OwnerType { log, point }
 
 @DataClassName('CatchLog')
+@TableIndex(name: 'idx_catch_log_fished_at', columns: {#fishedAt})
 class CatchLogs extends Table {
   TextColumn get id => text()();
   TextColumn get genre => textEnum<Genre>()();
@@ -37,6 +38,7 @@ class CatchLogs extends Table {
 }
 
 @DataClassName('CatchItem')
+@TableIndex(name: 'idx_catch_item_log_id', columns: {#logId})
 class CatchItems extends Table {
   TextColumn get id => text()();
   TextColumn get logId =>
@@ -67,6 +69,7 @@ class Photos extends Table {
 }
 
 @DataClassName('Point')
+@TableIndex(name: 'idx_point_lat_lng', columns: {#lat, #lng})
 class Points extends Table {
   TextColumn get id => text()();
   TextColumn get name => text()();
@@ -84,6 +87,7 @@ class Points extends Table {
 }
 
 @DataClassName('Track')
+@TableIndex(name: 'idx_track_started_at', columns: {#startedAt})
 class Tracks extends Table {
   TextColumn get id => text()();
   TextColumn get pointId => text().nullable().references(Points, #id)();

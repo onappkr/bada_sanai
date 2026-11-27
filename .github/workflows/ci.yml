@@ -33,6 +33,20 @@ jobs:
           dart run build_runner build
           git diff --exit-code -- lib/core/db/app_database.g.dart
 
+      # 출시한 DB 모양(drift_schemas/)이 코드와 어긋났는지 확인한다. 테이블을 바꾸고 schemaVersion과
+      # 스냅샷·마이그레이션 단계를 갱신하지 않으면 여기서 실패해, 사용자 기록이 업데이트로 날아가는 것을 막는다.
+      # 갱신 방법은 test/migration_test.dart의 주석에 있다.
+      - name: DB 스키마 스냅샷 최신 여부
+        run: |
+          dart run drift_dev schema dump lib/core/db/app_database.dart drift_schemas/
+          dart run drift_dev schema steps drift_schemas/ lib/core/db/schema_versions.dart
+          dart run drift_dev schema generate drift_schemas/ test/generated_migrations/
+          test -z "$(git status --porcelain -- drift_schemas lib/core/db/schema_versions.dart test/generated_migrations)" || {
+            git status --porcelain -- drift_schemas lib/core/db/schema_versions.dart test/generated_migrations
+            echo "DB 스키마 스냅샷이 코드와 다릅니다. test/migration_test.dart의 안내대로 갱신해 커밋하세요."
+            exit 1
+          }
+
       - run: flutter analyze
 
       # SQLite가 필요한 저장소 테스트와 위젯 테스트까지 모두 돈다.

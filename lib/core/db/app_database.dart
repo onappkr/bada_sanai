@@ -1,5 +1,6 @@
 import 'package:drift/drift.dart';
 
+import 'schema_versions.dart';
 import 'tables.dart';
 
 export 'tables.dart' show Genre, PointSource, TrackStatus, CandidateStatus, OwnerType;
@@ -26,17 +27,11 @@ class AppDatabase extends _$AppDatabase {
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
-        onCreate: (m) async {
-          await m.createAll();
-          await customStatement(
-              'CREATE INDEX idx_catch_log_fished_at ON catch_logs(fished_at)');
-          await customStatement(
-              'CREATE INDEX idx_catch_item_log_id ON catch_items(log_id)');
-          await customStatement(
-              'CREATE INDEX idx_point_lat_lng ON points(lat, lng)');
-          await customStatement(
-              'CREATE INDEX idx_track_started_at ON tracks(started_at)');
-        },
+        // 인덱스는 tables.dart의 @TableIndex로 선언되어 createAll()이 함께 만든다.
+        onCreate: (m) => m.createAll(),
+        // 스키마를 바꿀 때는 schemaVersion을 올리고 drift_schemas/를 다시 덤프한 뒤
+        // schema_versions.dart를 재생성하면 단계별 마이그레이션(from1To2 ...)을 채울 수 있다.
+        onUpgrade: stepByStep(),
         beforeOpen: (details) async {
           await customStatement('PRAGMA foreign_keys = ON');
         },

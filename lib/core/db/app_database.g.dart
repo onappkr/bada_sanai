@@ -4446,6 +4446,22 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $ForecastCacheTable forecastCache = $ForecastCacheTable(this);
   late final $ShareImportsTable shareImports = $ShareImportsTable(this);
   late final $AppSettingsTable appSettings = $AppSettingsTable(this);
+  late final Index idxCatchLogFishedAt = Index(
+    'idx_catch_log_fished_at',
+    'CREATE INDEX idx_catch_log_fished_at ON catch_logs (fished_at)',
+  );
+  late final Index idxCatchItemLogId = Index(
+    'idx_catch_item_log_id',
+    'CREATE INDEX idx_catch_item_log_id ON catch_items (log_id)',
+  );
+  late final Index idxPointLatLng = Index(
+    'idx_point_lat_lng',
+    'CREATE INDEX idx_point_lat_lng ON points (lat, lng)',
+  );
+  late final Index idxTrackStartedAt = Index(
+    'idx_track_started_at',
+    'CREATE INDEX idx_track_started_at ON tracks (started_at)',
+  );
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -4461,6 +4477,10 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     forecastCache,
     shareImports,
     appSettings,
+    idxCatchLogFishedAt,
+    idxCatchItemLogId,
+    idxPointLatLng,
+    idxTrackStartedAt,
   ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
