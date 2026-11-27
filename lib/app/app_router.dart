@@ -5,6 +5,7 @@ import '../features/catch_log/presentation/catch_log_detail_screen.dart';
 import '../features/catch_log/presentation/catch_log_form_screen.dart';
 import '../features/catch_log/presentation/catch_log_list_screen.dart';
 import '../features/backup/presentation/backup_screen.dart';
+import '../features/home/presentation/home_screen.dart';
 import '../features/permissions/presentation/permissions_screen.dart';
 import '../features/tracking/presentation/arrival_screen.dart';
 import '../features/tracking/presentation/candidates_screen.dart';
@@ -37,9 +38,6 @@ PlaceholderScreen _ph(
       actions: actions,
     );
 
-Widget _go(BuildContext c, String label, String path) =>
-    FilledButton.tonal(onPressed: () => c.push(path), child: Text(label));
-
 /// [onboardingDone]이 거짓이면 온보딩·권한 안내 외의 화면은 온보딩으로 보낸다.
 /// 값이 바뀌면 [refresh]로 알려 다시 판단하게 한다.
 GoRouter createRouter({
@@ -65,18 +63,7 @@ GoRouter createRouter({
             StatefulShellBranch(routes: [
               GoRoute(
                 path: Routes.home,
-                builder: (c, s) => Builder(
-                  builder: (c) => _ph(
-                    'S03',
-                    '홈',
-                    '오늘의 물때·날씨·수온, 추천 어종, 최근 일지, 경로 기록 시작',
-                    actions: [
-                      _go(c, '물때·날씨 상세 (S14)', Routes.forecast),
-                      _go(c, '어종 추천 (S13)', Routes.species),
-                      _go(c, '도착 알림 수락 (S10)', Routes.arrival),
-                    ],
-                  ),
-                ),
+                builder: (c, s) => const HomeScreen(),
               ),
             ]),
             StatefulShellBranch(routes: [
