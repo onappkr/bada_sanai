@@ -14,6 +14,7 @@ import 'features/photo/application/photo_providers.dart';
 import 'features/photo/data/in_memory_photo.dart';
 import 'features/point/application/point_providers.dart';
 import 'features/settings/application/settings_providers.dart';
+import 'features/settings/domain/data_eraser.dart';
 import 'features/settings/data/settings_repositories.dart';
 import 'features/share/application/share_providers.dart';
 import 'features/tracking/application/tracking_providers.dart';
@@ -102,6 +103,16 @@ Future<void> main() async {
   ];
   await tracks.finish(savedId, summarizeTrack(savedStart, savedSamples));
 
+  final photoRepo = InMemoryPhotoRepository();
+  final photoStore = InMemoryPhotoStore();
+  // 데이터 모두 삭제를 시험할 수 있게 메모리 저장소를 실제로 비운다.
+  final eraser = _PreviewEraser(() {
+    repo.clear();
+    points.clear();
+    photoRepo.clear();
+    tracks.clear();
+  });
+
   runApp(ProviderScope(
     overrides: [
       catchLogRepositoryProvider.overrideWithValue(repo),
@@ -117,8 +128,9 @@ Future<void> main() async {
       locationSourceProvider.overrideWithValue(SimulatedLocationSource()),
       backupRepositoryProvider.overrideWithValue(_PreviewBackupRepository()),
       backupFileGatewayProvider.overrideWithValue(_PreviewBackupGateway()),
-      photoRepositoryProvider.overrideWithValue(InMemoryPhotoRepository()),
-      photoStoreProvider.overrideWithValue(InMemoryPhotoStore()),
+      photoRepositoryProvider.overrideWithValue(photoRepo),
+      dataEraserProvider.overrideWithValue(eraser),
+      photoStoreProvider.overrideWithValue(photoStore),
     ],
     child: const BadaSanaiApp(),
   ));
@@ -162,4 +174,14 @@ class _PreviewPermissionService implements PermissionService {
 
   @override
   Future<void> openSettings() async {}
+}
+
+/// 미리보기용 삭제기: 메모리 저장소를 비운다.
+class _PreviewEraser implements DataEraser {
+  _PreviewEraser(this._clear);
+
+  final void Function() _clear;
+
+  @override
+  Future<void> eraseAll() async => _clear();
 }
