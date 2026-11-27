@@ -4,6 +4,7 @@ import 'package:material_ui/material_ui.dart';
 import '../features/catch_log/presentation/catch_log_detail_screen.dart';
 import '../features/catch_log/presentation/catch_log_form_screen.dart';
 import '../features/catch_log/presentation/catch_log_list_screen.dart';
+import '../features/backup/presentation/backup_screen.dart';
 import '../features/share/presentation/share_sheet_screen.dart';
 import '../features/share/presentation/shared_point_screen.dart';
 import '../features/point/presentation/point_detail_screen.dart';
@@ -109,8 +110,7 @@ GoRouter createRouter({String initialLocation = Routes.home}) => GoRouter(
                   GoRoute(
                     path: 'backup',
                     parentNavigatorKey: _rootKey,
-                    builder: (c, s) => _ph(
-                        'S18', '백업·복원', '파일 내보내기·불러오기, 클라우드 드라이브 백업'),
+                    builder: (c, s) => const BackupScreen(),
                   ),
                 ],
               ),
