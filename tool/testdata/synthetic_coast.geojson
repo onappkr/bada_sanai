@@ -1,0 +1,13 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {"note": "합성 시험 데이터: 실제 해안선이 아니다"},
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [[129.0000, 35.0000], [129.0000, 35.0090], [129.0100, 35.0090]]
+      }
+    }
+  ]
+}
