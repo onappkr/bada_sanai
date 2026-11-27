@@ -16,7 +16,7 @@ List<GeoPoint> simplifyPolyline(List<GeoPoint> points, double toleranceMeters) {
     var maxDist = 0.0;
     var index = -1;
     for (var i = start + 1; i < end; i++) {
-      final d = _crossTrackMeters(points[i], points[start], points[end]);
+      final d = distanceToSegmentM(points[i], points[start], points[end]);
       if (d > maxDist) {
         maxDist = d;
         index = i;
@@ -35,7 +35,8 @@ List<GeoPoint> simplifyPolyline(List<GeoPoint> points, double toleranceMeters) {
 }
 
 /// 선분 a-b로부터 p까지의 거리(미터). 국소 평면 근사(equirectangular).
-double _crossTrackMeters(GeoPoint p, GeoPoint a, GeoPoint b) {
+/// 선분의 끝점 바깥이면 가까운 끝점까지의 거리다.
+double distanceToSegmentM(GeoPoint p, GeoPoint a, GeoPoint b) {
   const r = 6371000.0;
   final latRef = a.lat * math.pi / 180;
   double x(GeoPoint g) => (g.lng - a.lng) * math.pi / 180 * math.cos(latRef) * r;
@@ -48,4 +49,16 @@ double _crossTrackMeters(GeoPoint p, GeoPoint a, GeoPoint b) {
   final t = ((px * bx + py * by) / len2).clamp(0.0, 1.0);
   final dx = px - t * bx, dy = py - t * by;
   return math.sqrt(dx * dx + dy * dy);
+}
+
+/// 점 [p]에서 꺾은선 [line]까지의 최단 거리(미터). 선이 비었으면 무한대,
+/// 점 하나면 그 점까지의 거리다.
+double distanceToPolylineM(GeoPoint p, List<GeoPoint> line) {
+  if (line.isEmpty) return double.infinity;
+  if (line.length == 1) return p.distanceTo(line.first);
+  var best = double.infinity;
+  for (var i = 1; i < line.length; i++) {
+    best = math.min(best, distanceToSegmentM(p, line[i - 1], line[i]));
+  }
+  return best;
 }

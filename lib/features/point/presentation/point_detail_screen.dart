@@ -8,7 +8,11 @@ import '../../catch_log/presentation/date_format.dart';
 import '../../photo/application/photo_providers.dart';
 import '../../photo/domain/photo_models.dart';
 import '../../photo/presentation/photo_widgets.dart';
+import '../../../core/geo/geo_point.dart';
 import '../../species/domain/species_catalog.dart';
+import '../../tracking/application/tracking_providers.dart';
+import '../../tracking/domain/track_visits.dart';
+import '../../tracking/presentation/track_list_screen.dart' show formatDistance, formatDuration;
 import '../application/point_providers.dart';
 import '../domain/point_models.dart';
 
@@ -85,6 +89,10 @@ class _Body extends ConsumerWidget {
             .watch(photosByOwnerProvider((type: OwnerType.point, id: point.id)))
             .value ??
         const [];
+    final visits = tracksNearPoint(
+      ref.watch(savedTracksProvider).value ?? const [],
+      GeoPoint(point.lat, point.lng),
+    );
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
@@ -124,6 +132,20 @@ class _Body extends ConsumerWidget {
                     ' · 총 ${l.totalCount}마리'),
             trailing: const Icon(Icons.chevron_right),
             onTap: () => context.push(Routes.logDetailOf(l.id)),
+          ),
+        const SizedBox(height: 16),
+        Text('방문 경로 (${visits.length})', style: text.titleMedium),
+        Text('이 포인트에서 ${visitRadiusM.round()}m 안을 지난 내 경로예요.',
+            style: text.bodySmall),
+        if (visits.isEmpty) const Text('아직 근처를 지난 경로가 없어요.'),
+        for (final t in visits)
+          ListTile(
+            contentPadding: EdgeInsets.zero,
+            leading: const Icon(Icons.route),
+            title: Text(formatDateTime(t.startedAt)),
+            subtitle: Text('${formatDistance(t.distanceM)} · ${formatDuration(t.duration)}'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => context.push(Routes.trackDetailOf(t.id)),
           ),
       ],
     );
