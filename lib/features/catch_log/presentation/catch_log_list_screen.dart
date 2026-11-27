@@ -6,6 +6,7 @@ import '../../../app/routes.dart';
 import '../../species/domain/species_catalog.dart';
 import '../application/catch_log_providers.dart';
 import '../domain/catch_log_models.dart';
+import '../domain/log_period.dart';
 import 'date_format.dart';
 
 /// S04 일지 목록.
@@ -16,6 +17,8 @@ class CatchLogListScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final logs = ref.watch(catchLogsProvider);
     final filter = ref.watch(genreFilterProvider);
+    final period = ref.watch(periodFilterProvider);
+    final filtering = filter != null || period != LogPeriod.all;
 
     return Scaffold(
       appBar: AppBar(title: const Text('일지')),
@@ -53,12 +56,33 @@ class CatchLogListScreen extends ConsumerWidget {
               ],
             ),
           ),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.fromLTRB(12, 4, 12, 0),
+            child: Row(
+              children: [
+                for (final p in LogPeriod.values)
+                  Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: ChoiceChip(
+                      label: Text(p.label),
+                      selected: period == p,
+                      onSelected: (_) =>
+                          ref.read(periodFilterProvider.notifier).select(p),
+                    ),
+                  ),
+              ],
+            ),
+          ),
           Expanded(
             child: logs.when(
               loading: () => const Center(child: CircularProgressIndicator()),
               error: (e, _) => Center(child: Text('불러오지 못했습니다: $e')),
               data: (items) => items.isEmpty
-                  ? const Center(child: Text('기록이 없습니다. 첫 조행기를 남겨 보세요.'))
+                  ? Center(
+                      child: Text(filtering
+                          ? '조건에 맞는 기록이 없습니다.'
+                          : '기록이 없습니다. 첫 조행기를 남겨 보세요.'))
                   : ListView.separated(
                       padding: const EdgeInsets.only(bottom: 88),
                       itemCount: items.length,
