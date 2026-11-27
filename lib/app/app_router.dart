@@ -4,6 +4,9 @@ import 'package:material_ui/material_ui.dart';
 import '../features/catch_log/presentation/catch_log_detail_screen.dart';
 import '../features/catch_log/presentation/catch_log_form_screen.dart';
 import '../features/catch_log/presentation/catch_log_list_screen.dart';
+import '../features/point/presentation/point_detail_screen.dart';
+import '../features/point/presentation/point_form_screen.dart';
+import '../features/point/presentation/point_list_screen.dart';
 import '../shared/placeholder_screen.dart';
 import 'routes.dart';
 
@@ -82,17 +85,7 @@ GoRouter createRouter({String initialLocation = Routes.home}) => GoRouter(
             StatefulShellBranch(routes: [
               GoRoute(
                 path: Routes.map,
-                builder: (c, s) => Builder(
-                  builder: (c) => _ph(
-                    'S07',
-                    '포인트 지도',
-                    '내 포인트 마커, 이동경로, 현재 위치',
-                    actions: [
-                      _go(c, '포인트 상세 예시 (S08)', Routes.pointDetailOf('sample')),
-                      _go(c, '경로 기록 중 (S11)', Routes.tracking),
-                    ],
-                  ),
-                ),
+                builder: (c, s) => const PointListScreen(),
               ),
             ]),
             StatefulShellBranch(routes: [
@@ -133,34 +126,21 @@ GoRouter createRouter({String initialLocation = Routes.home}) => GoRouter(
           builder: (c, s) =>
               _ph('S02', '권한 안내', '위치·알림·사진 권한을 이유와 함께 요청'),
         ),
+        // '/points/new'는 '/points/:id'보다 먼저 선언해야 한다.
+        GoRoute(
+          path: Routes.pointNew,
+          parentNavigatorKey: _rootKey,
+          builder: (c, s) => const PointFormScreen(),
+        ),
         GoRoute(
           path: Routes.pointDetail,
           parentNavigatorKey: _rootKey,
-          builder: (c, s) => Builder(
-            builder: (c) {
-              final id = s.pathParameters['id']!;
-              return _ph(
-                'S08',
-                '포인트 상세',
-                '이름·메모·사진, 방문 이력, 공유·편집',
-                params: {'id': id},
-                actions: [
-                  _go(c, '편집 (S09)', Routes.pointEditOf(id)),
-                  _go(c, '공유 (S15)', Routes.shareOf(id)),
-                ],
-              );
-            },
-          ),
+          builder: (c, s) => PointDetailScreen(id: s.pathParameters['id']!),
         ),
         GoRoute(
           path: Routes.pointEdit,
           parentNavigatorKey: _rootKey,
-          builder: (c, s) => _ph(
-            'S09',
-            '포인트 편집',
-            '이름, 장르, 메모, 사진, 위치 미세 조정',
-            params: {'id': s.pathParameters['id']!},
-          ),
+          builder: (c, s) => PointFormScreen(id: s.pathParameters['id']),
         ),
         GoRoute(
           path: Routes.arrival,
