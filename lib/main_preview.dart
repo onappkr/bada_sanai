@@ -8,9 +8,13 @@ import 'features/backup/domain/backup_ports.dart';
 import 'features/catch_log/application/catch_log_providers.dart';
 import 'features/catch_log/data/in_memory_catch_log_repository.dart';
 import 'features/catch_log/domain/catch_log_models.dart';
+import 'features/permissions/application/permission_providers.dart';
+import 'features/permissions/domain/permission_service.dart';
 import 'features/photo/application/photo_providers.dart';
 import 'features/photo/data/in_memory_photo.dart';
 import 'features/point/application/point_providers.dart';
+import 'features/settings/application/settings_providers.dart';
+import 'features/settings/data/settings_repositories.dart';
 import 'features/share/application/share_providers.dart';
 import 'features/share/data/in_memory_share_import_repository.dart';
 import 'features/point/data/in_memory_point_repository.dart';
@@ -71,6 +75,11 @@ Future<void> main() async {
       pointRepositoryProvider.overrideWithValue(points),
       shareImportRepositoryProvider
           .overrideWithValue(InMemoryShareImportRepository(points)),
+      // 온보딩부터 보려면: flutter build web -t lib/main_preview.dart --dart-define=PREVIEW_ONBOARDING=true
+      initialOnboardingDoneProvider
+          .overrideWithValue(!const bool.fromEnvironment('PREVIEW_ONBOARDING')),
+      settingsRepositoryProvider.overrideWithValue(InMemorySettingsRepository()),
+      permissionServiceProvider.overrideWithValue(_PreviewPermissionService()),
       backupRepositoryProvider.overrideWithValue(_PreviewBackupRepository()),
       backupFileGatewayProvider.overrideWithValue(_PreviewBackupGateway()),
       photoRepositoryProvider.overrideWithValue(InMemoryPhotoRepository()),
@@ -99,4 +108,23 @@ class _PreviewBackupGateway implements BackupFileGateway {
   Future<String?> pick() async =>
       '{"app":"bada_sanai","version":1,"exportedAt":"2026-11-27T00:00:00Z",'
       '"points":[],"logs":[],"items":[]}';
+}
+
+/// 미리보기용 권한 가짜: 위치는 허용 가능, 알림은 허용됨, 카메라는 설정에서만 바꿀 수 있는 상태.
+class _PreviewPermissionService implements PermissionService {
+  final _state = {
+    AppPermission.location: PermissionState.denied,
+    AppPermission.notification: PermissionState.granted,
+    AppPermission.camera: PermissionState.blocked,
+  };
+
+  @override
+  Future<PermissionState> status(AppPermission permission) async => _state[permission]!;
+
+  @override
+  Future<PermissionState> request(AppPermission permission) async =>
+      _state[permission] = PermissionState.granted;
+
+  @override
+  Future<void> openSettings() async {}
 }

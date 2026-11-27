@@ -16,6 +16,18 @@
 	<string>6.0</string>
 	<key>CFBundleName</key>
 	<string>bada_sanai</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>현재 위치를 지도에 표시하고 포인트를 저장하는 데 사용해요.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>앱을 닫아도 바다에 도착하면 알려 드리고 이동 경로를 기록하는 데 사용해요.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>조과와 포인트 사진을 촬영하는 데 사용해요.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>일지와 포인트에 앨범 사진을 첨부하는 데 사용해요.</string>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>location</string>
+	</array>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>

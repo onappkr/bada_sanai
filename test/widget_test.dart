@@ -1,6 +1,7 @@
 import 'package:bada_sanai/app/app.dart';
 import 'package:bada_sanai/core/db/app_database.dart';
 import 'package:bada_sanai/features/catch_log/application/catch_log_providers.dart';
+import 'package:bada_sanai/features/settings/application/settings_providers.dart';
 import 'package:drift/native.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -11,7 +12,10 @@ void main() {
     addTearDown(db.close);
 
     await tester.pumpWidget(ProviderScope(
-      overrides: [databaseProvider.overrideWithValue(db)],
+      overrides: [
+        databaseProvider.overrideWithValue(db),
+        initialOnboardingDoneProvider.overrideWithValue(true),
+      ],
       child: const BadaSanaiApp(),
     ));
     await tester.pumpAndSettle();
