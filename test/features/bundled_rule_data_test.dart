@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:bada_sanai/features/arrival/domain/coast_cells.dart';
 import 'package:bada_sanai/features/species/domain/rule_book.dart';
 import 'package:test/test.dart';
 
@@ -22,9 +23,16 @@ void main() {
     expect(book.regions, isEmpty);
   });
 
-  test('pubspec에 데이터 파일 두 개가 번들로 등록되어 있다', () {
+  test('해안 셀 데이터 파일이 형식에 맞게 읽히고 지금은 비어 있다', () {
+    final cells = CoastCells.parse(File('assets/data/coast_cells.json').readAsStringSync());
+    expect(cells.version, isNonNegative);
+    expect(cells.isUsable, isFalse);
+  });
+
+  test('pubspec에 데이터 파일 세 개가 번들로 등록되어 있다', () {
     final pubspec = File('pubspec.yaml').readAsStringSync();
     expect(pubspec, contains('assets/data/species_rule.json'));
     expect(pubspec, contains('assets/data/region.json'));
+    expect(pubspec, contains('assets/data/coast_cells.json'));
   });
 }
