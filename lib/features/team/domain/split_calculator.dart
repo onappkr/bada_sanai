@@ -41,20 +41,31 @@ List<Transfer> buildTransfers(Map<String, int> balances) {
     if (v < 0) debtors.add(_Entry(id, -v));
     if (v > 0) creditors.add(_Entry(id, v));
   }
-  int byAmountDesc(_Entry a, _Entry b) => b.amount.compareTo(a.amount);
-  debtors.sort(byAmountDesc);
-  creditors.sort(byAmountDesc);
+  // 매번 남은 금액이 가장 큰 채무자와 채권자를 다시 골라 짝짓는다(서버의 반복문과 같다).
+  // 금액이 같으면 id 순. List.sort는 안정 정렬이 아니므로 id까지 비교해
+  // 입력 순서와 무관하게 항상 같은 결과가 나오게 한다.
+  _Entry? biggest(List<_Entry> list) {
+    _Entry? best;
+    for (final e in list) {
+      if (e.amount == 0) continue;
+      if (best == null ||
+          e.amount > best.amount ||
+          (e.amount == best.amount && e.id.compareTo(best.id) < 0)) {
+        best = e;
+      }
+    }
+    return best;
+  }
 
   final transfers = <Transfer>[];
-  var i = 0, j = 0;
-  while (i < debtors.length && j < creditors.length) {
-    final d = debtors[i], c = creditors[j];
+  while (true) {
+    final d = biggest(debtors);
+    final c = biggest(creditors);
+    if (d == null || c == null) break;
     final amount = d.amount < c.amount ? d.amount : c.amount;
     transfers.add(Transfer(from: d.id, to: c.id, amount: amount));
     d.amount -= amount;
     c.amount -= amount;
-    if (d.amount == 0) i++;
-    if (c.amount == 0) j++;
   }
   return transfers;
 }
