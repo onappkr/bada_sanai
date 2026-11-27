@@ -5,6 +5,8 @@ import 'package:material_ui/material_ui.dart';
 import '../../photo/application/photo_providers.dart';
 import '../../photo/domain/photo_models.dart';
 import '../../photo/presentation/photo_widgets.dart';
+import '../../tracking/application/tracking_providers.dart';
+import '../../tracking/domain/current_location.dart';
 import '../application/point_providers.dart';
 import '../domain/point_models.dart';
 
@@ -30,6 +32,7 @@ class _PointFormScreenState extends ConsumerState<PointFormScreen> {
   PointSource _source = PointSource.manual;
   bool _loading = false;
   bool _saving = false;
+  bool _locating = false;
 
   @override
   void initState() {
@@ -67,6 +70,25 @@ class _PointFormScreenState extends ConsumerState<PointFormScreen> {
     _lng.dispose();
     _memo.dispose();
     super.dispose();
+  }
+
+  /// 현재 위치를 위도·경도 칸에 채운다. 실패하면 안내만 보이고 입력은 그대로 둔다.
+  Future<void> _useCurrentLocation() async {
+    setState(() => _locating = true);
+    try {
+      final fix = await currentLocation(ref.read(locationSourceProvider));
+      if (!mounted) return;
+      setState(() {
+        _lat.text = fix.lat.toStringAsFixed(6);
+        _lng.text = fix.lng.toStringAsFixed(6);
+      });
+    } on LocationUnavailable catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+      }
+    } finally {
+      if (mounted) setState(() => _locating = false);
+    }
   }
 
   Future<void> _save() async {
@@ -163,7 +185,22 @@ class _PointFormScreenState extends ConsumerState<PointFormScreen> {
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 8),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: TextButton.icon(
+              onPressed: _locating ? null : _useCurrentLocation,
+              icon: _locating
+                  ? const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(Icons.my_location),
+              label: Text(_locating ? '위치 찾는 중…' : '현재 위치 사용'),
+            ),
+          ),
+          const SizedBox(height: 8),
           Text('장르', style: Theme.of(context).textTheme.titleSmall),
           const SizedBox(height: 8),
           Wrap(
