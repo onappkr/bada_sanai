@@ -4,6 +4,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
 import 'app/app.dart';
+import 'core/geo/geo_point.dart';
+import 'features/arrival/application/arrival_providers.dart';
+import 'features/arrival/data/local_notification_service.dart';
+import 'features/arrival/domain/coast_cells.dart';
 import 'features/backup/application/backup_providers.dart';
 import 'features/backup/domain/backup_models.dart';
 import 'features/backup/domain/backup_ports.dart';
@@ -25,6 +29,7 @@ import 'features/species/domain/rule_book.dart';
 import 'features/settings/domain/data_eraser.dart';
 import 'features/settings/data/settings_repositories.dart';
 import 'features/share/application/share_providers.dart';
+import 'features/share/domain/deep_link_service.dart';
 import 'features/tracking/application/tracking_providers.dart';
 import 'features/tracking/data/in_memory_tracking.dart';
 import 'features/tracking/domain/track_logic.dart';
@@ -169,6 +174,8 @@ Future<void> main() async {
     }),
   );
 
+  final previewNotifications = FakeNotificationService();
+
   runApp(ProviderScope(
     overrides: [
       catchLogRepositoryProvider.overrideWithValue(repo),
@@ -184,6 +191,11 @@ Future<void> main() async {
       locationSourceProvider.overrideWithValue(SimulatedLocationSource()),
       passiveLocationSourceProvider.overrideWithValue(SimulatedLocationSource()),
       ruleBookProvider.overrideWith((ref) => sampleBook),
+      // 미리보기 전용 가짜 해안 셀(시뮬레이션 위치가 머무는 자리)과 가짜 알림·링크.
+      coastCellsProvider.overrideWith((ref) async => CoastCells(cells: const [GeoPoint(35.0821, 129.0889)])),
+      arrivalSourceProvider.overrideWithValue(SimulatedLocationSource()),
+      notificationServiceProvider.overrideWithValue(previewNotifications),
+      deepLinkServiceProvider.overrideWithValue(const NoDeepLinkService()),
       forecastSourceProvider.overrideWithValue(_PreviewForecastSource()),
       forecastCacheProvider.overrideWithValue(InMemoryForecastCache()),
       backupRepositoryProvider.overrideWithValue(_PreviewBackupRepository()),

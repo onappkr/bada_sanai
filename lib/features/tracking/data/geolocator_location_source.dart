@@ -9,9 +9,21 @@ import '../domain/tracking_ports.dart';
 class GeolocatorLocationSource implements LocationSource {
   /// [requestPermission]이 false면 권한이 없을 때 권한 창을 띄우지 않고 오류를 흘린다
   /// (일지 저장처럼 사용자가 위치를 기대하지 않는 곳에서 쓴다).
-  const GeolocatorLocationSource({this.requestPermission = true});
+  const GeolocatorLocationSource({
+    this.requestPermission = true,
+    this.distanceFilterM = 5,
+    this.foregroundTitle = '경로 기록 중',
+    this.foregroundText = '바다 사나이가 이동 경로를 기록하고 있어요',
+  });
 
   final bool requestPermission;
+
+  /// 이 거리(미터)만큼 움직여야 새 위치를 받는다. 클수록 배터리를 덜 쓴다.
+  final int distanceFilterM;
+
+  /// Android 포그라운드 알림에 보이는 문구(화면이 꺼져도 위치를 받기 위해 필요하다).
+  final String foregroundTitle;
+  final String foregroundText;
 
   @override
   Stream<LocationSample> watch() async* {
@@ -30,21 +42,21 @@ class GeolocatorLocationSource implements LocationSource {
     final LocationSettings settings = switch (defaultTargetPlatform) {
       TargetPlatform.android => AndroidSettings(
           accuracy: LocationAccuracy.best,
-          distanceFilter: 5,
-          foregroundNotificationConfig: const ForegroundNotificationConfig(
-            notificationTitle: '경로 기록 중',
-            notificationText: '바다 사나이가 이동 경로를 기록하고 있어요',
+          distanceFilter: distanceFilterM,
+          foregroundNotificationConfig: ForegroundNotificationConfig(
+            notificationTitle: foregroundTitle,
+            notificationText: foregroundText,
             enableWakeLock: true,
           ),
         ),
       TargetPlatform.iOS || TargetPlatform.macOS => AppleSettings(
           accuracy: LocationAccuracy.best,
-          distanceFilter: 5,
+          distanceFilter: distanceFilterM,
           activityType: ActivityType.fitness,
           pauseLocationUpdatesAutomatically: false,
           showBackgroundLocationIndicator: true,
         ),
-      _ => const LocationSettings(accuracy: LocationAccuracy.best, distanceFilter: 5),
+      _ => LocationSettings(accuracy: LocationAccuracy.best, distanceFilter: distanceFilterM),
     };
 
     await for (final p in Geolocator.getPositionStream(locationSettings: settings)) {

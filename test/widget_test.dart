@@ -1,9 +1,14 @@
 import 'package:bada_sanai/app/app.dart';
+import 'package:bada_sanai/features/arrival/application/arrival_providers.dart';
+import 'package:bada_sanai/features/arrival/data/local_notification_service.dart';
 import 'package:bada_sanai/features/catch_log/application/catch_log_providers.dart';
 import 'package:bada_sanai/features/catch_log/data/in_memory_catch_log_repository.dart';
 import 'package:bada_sanai/features/point/application/point_providers.dart';
 import 'package:bada_sanai/features/point/data/in_memory_point_repository.dart';
 import 'package:bada_sanai/features/settings/application/settings_providers.dart';
+import 'package:bada_sanai/features/settings/data/settings_repositories.dart';
+import 'package:bada_sanai/features/share/application/share_providers.dart';
+import 'package:bada_sanai/features/share/domain/deep_link_service.dart';
 import 'package:bada_sanai/features/tracking/application/tracking_providers.dart';
 import 'package:bada_sanai/features/tracking/data/in_memory_tracking.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -27,6 +32,10 @@ List<Override> memoryOverrides({required bool onboardingDone}) {
     catchLogRepositoryProvider.overrideWithValue(InMemoryCatchLogRepository()),
     pointRepositoryProvider.overrideWithValue(points),
     trackRepositoryProvider.overrideWithValue(InMemoryTrackRepository(points)),
+    // 앱 시작 때 도는 이벤트 처리(알림·앱 링크·도착 감시 복원)는 실제 플러그인 대신 가짜로.
+    notificationServiceProvider.overrideWithValue(FakeNotificationService()),
+    deepLinkServiceProvider.overrideWithValue(const NoDeepLinkService()),
+    settingsRepositoryProvider.overrideWithValue(InMemorySettingsRepository()),
   ];
 }
 

@@ -9,6 +9,9 @@ abstract interface class SettingsRepository {
 abstract final class SettingKeys {
   /// 온보딩을 끝까지 봤거나 건너뛰었으면 "1".
   static const onboardingDone = 'onboarding_done';
+
+  /// 도착 알림을 켰으면 "1".
+  static const arrivalWatch = 'arrival_watch_enabled';
 }
 
 extension SettingsRepositoryX on SettingsRepository {
@@ -16,4 +19,10 @@ extension SettingsRepositoryX on SettingsRepository {
       await get(SettingKeys.onboardingDone) == '1';
 
   Future<void> markOnboardingDone() => set(SettingKeys.onboardingDone, '1');
+}
+
+extension ArrivalSettingX on SettingsRepository {
+  Future<bool> isArrivalWatchEnabled() async => await get(SettingKeys.arrivalWatch) == '1';
+
+  Future<void> setArrivalWatchEnabled(bool on) => set(SettingKeys.arrivalWatch, on ? '1' : '0');
 }
