@@ -5,6 +5,7 @@ import '../features/catch_log/presentation/catch_log_detail_screen.dart';
 import '../features/catch_log/presentation/catch_log_form_screen.dart';
 import '../features/catch_log/presentation/catch_log_list_screen.dart';
 import '../features/backup/presentation/backup_screen.dart';
+import '../features/forecast/presentation/forecast_screen.dart';
 import '../features/home/presentation/home_screen.dart';
 import '../features/permissions/presentation/permissions_screen.dart';
 import '../features/tracking/presentation/arrival_screen.dart';
@@ -20,26 +21,10 @@ import '../features/share/presentation/shared_point_screen.dart';
 import '../features/point/presentation/point_detail_screen.dart';
 import '../features/point/presentation/point_form_screen.dart';
 import '../features/point/presentation/point_list_screen.dart';
-import '../shared/placeholder_screen.dart';
 import 'onboarding_redirect.dart';
 import 'routes.dart';
 
 final _rootKey = GlobalKey<NavigatorState>(debugLabel: 'root');
-
-PlaceholderScreen _ph(
-  String id,
-  String title,
-  String purpose, {
-  Map<String, String> params = const {},
-  List<Widget> actions = const [],
-}) =>
-    PlaceholderScreen(
-      id: id,
-      title: title,
-      purpose: purpose,
-      params: params,
-      actions: actions,
-    );
 
 /// [onboardingDone]이 거짓이면 온보딩·권한 안내 외의 화면은 온보딩으로 보낸다.
 /// 값이 바뀌면 [refresh]로 알려 다시 판단하게 한다.
@@ -176,8 +161,7 @@ GoRouter createRouter({
         GoRoute(
           path: Routes.forecast,
           parentNavigatorKey: _rootKey,
-          builder: (c, s) =>
-              _ph('S14', '물때·날씨 상세', '조위, 물때 단계, 파고·풍속·기온'),
+          builder: (c, s) => const ForecastScreen(),
         ),
         GoRoute(
           path: Routes.share,

@@ -79,6 +79,18 @@ void main() {
       expect(b.isUsable, isTrue);
     });
 
+    test('해역의 격자·관측소 ID를 읽고, 없으면 null', () {
+      final b = build();
+      final r1 = b.regions.first;
+      expect((r1.gridNx, r1.gridNy), (1, 1));
+      expect(r1.tideStationId, 'T1');
+      expect(r1.seaTempStationId, 'S1');
+      final r2 = b.regions.last; // grid·관측소 없이 center만
+      expect((r2.gridNx, r2.gridNy), (null, null));
+      expect(r2.tideStationId, isNull);
+      expect(r2.seaTempStationId, isNull);
+    });
+
     test('빈 규칙집은 쓸 수 없고 추천은 비어 있다', () {
       expect(RuleBook.empty.isUsable, isFalse);
       expect(RuleBook.empty.recommend(regionCode: 'R-1', month: 7), isEmpty);

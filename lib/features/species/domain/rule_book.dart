@@ -32,11 +32,27 @@ class SpeciesRule {
 }
 
 class RuleRegion {
-  const RuleRegion({required this.code, required this.nameKo, required this.center});
+  const RuleRegion({
+    required this.code,
+    required this.nameKo,
+    required this.center,
+    this.gridNx,
+    this.gridNy,
+    this.tideStationId,
+    this.seaTempStationId,
+  });
 
   final String code;
   final String nameKo;
   final GeoPoint center;
+
+  /// 기상청 격자 좌표(날씨 조회용). 데이터에 없으면 null.
+  final int? gridNx;
+  final int? gridNy;
+
+  /// 조석 관측소·수온 관측소 ID(예보 원천 조회용). 데이터에 없으면 null.
+  final String? tideStationId;
+  final String? seaTempStationId;
 }
 
 /// 추천 결과 한 줄.
@@ -160,10 +176,20 @@ class RuleBook {
       if (lat < -90 || lat > 90 || lng < -180 || lng > 180) {
         throw FormatException('해역 $code의 좌표가 올바르지 않습니다');
       }
+      final grid = m['grid'] as Map<String, dynamic>?;
+      String? stationId(String key) {
+        final v = (m[key] as String?)?.trim();
+        return (v == null || v.isEmpty) ? null : v;
+      }
+
       regions.add(RuleRegion(
         code: code,
         nameKo: (m['name_ko'] as String).trim(),
         center: GeoPoint(lat, lng),
+        gridNx: (grid?['nx'] as num?)?.toInt(),
+        gridNy: (grid?['ny'] as num?)?.toInt(),
+        tideStationId: stationId('tide_station_id'),
+        seaTempStationId: stationId('sea_temp_station_id'),
       ));
     }
 
