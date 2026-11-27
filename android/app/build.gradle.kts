@@ -10,6 +10,8 @@ android {
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
+        // flutter_local_notifications가 요구한다(예약 알림에 쓰는 최신 Java API를 옛 안드로이드에서도 쓰게 한다).
+        isCoreLibraryDesugaringEnabled = true
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
@@ -27,6 +29,11 @@ android {
         // flag during build.
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+
+        // 공유 링크(https://도메인/p#...)를 앱이 직접 열 도메인. 도메인이 정해지면 빌드할 때
+        // `-PshareHost=실제도메인`으로 넘기고, 그 도메인의 /.well-known/assetlinks.json이 필요하다.
+        manifestPlaceholders["shareHost"] =
+            (project.findProperty("shareHost") as String?) ?: "bada-sanai.example"
     }
 
     buildTypes {
@@ -42,6 +49,10 @@ kotlin {
     compilerOptions {
         jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17
     }
+}
+
+dependencies {
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
 }
 
 flutter {

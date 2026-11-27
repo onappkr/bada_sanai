@@ -5,6 +5,8 @@ import 'package:material_ui/material_ui.dart';
 import '../../../app/routes.dart';
 import '../../photo/application/photo_providers.dart';
 import '../../tracking/application/tracking_providers.dart';
+import '../../arrival/application/arrival_providers.dart';
+import '../../arrival/domain/arrival_watcher.dart';
 import '../application/settings_providers.dart';
 import '../domain/data_eraser.dart';
 
@@ -19,6 +21,7 @@ class SettingsScreen extends ConsumerWidget {
       appBar: AppBar(title: const Text('설정')),
       body: ListView(
         children: [
+          const _ArrivalToggle(),
           ListTile(
             leading: const Icon(Icons.verified_user_outlined),
             title: const Text('권한'),
@@ -132,6 +135,58 @@ class _EraseDialogState extends State<_EraseDialog> {
           child: const Text('모두 삭제'),
         ),
       ],
+    );
+  }
+}
+
+/// 도착 알림 켜기·끄기. 해안 셀 데이터가 없으면 켤 수 없고 이유를 알려 준다.
+class _ArrivalToggle extends ConsumerWidget {
+  const _ArrivalToggle();
+
+  static String _subtitle(bool hasData, ArrivalUiState s) {
+    if (!hasData) return '해안 데이터가 아직 없어 사용할 수 없어요';
+    if (s.enabled) {
+      return switch (s.watch.phase) {
+        ArrivalWatchPhase.watching => '켜짐 · 해안에서 3분 머물면 알려 드려요',
+        ArrivalWatchPhase.error => s.watch.message ?? '위치를 받지 못하고 있어요',
+        ArrivalWatchPhase.noData => '해안 데이터가 없어 감지하지 못해요',
+        ArrivalWatchPhase.stopped => '준비 중…',
+      };
+    }
+    return '바다에 도착하면 이동 경로 기록을 제안해요';
+  }
+
+  static String _failure(EnableResult r) => switch (r) {
+        EnableResult.noData => '해안 데이터가 없어 켤 수 없어요.',
+        EnableResult.locationDenied => '위치 권한이 필요해요. 권한 화면에서 "항상 허용"으로 바꿔 주세요.',
+        EnableResult.notificationDenied => '알림 권한이 필요해요. 설정에서 알림을 허용해 주세요.',
+        EnableResult.ok => '',
+      };
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final ui = ref.watch(arrivalControllerProvider);
+    final hasData = ref.watch(coastCellsProvider).value?.isUsable ?? false;
+    final controller = ref.read(arrivalControllerProvider.notifier);
+
+    return SwitchListTile(
+      secondary: const Icon(Icons.notifications_active_outlined),
+      title: const Text('도착 알림'),
+      subtitle: Text(_subtitle(hasData, ui)),
+      value: ui.enabled,
+      // 데이터가 없으면 켤 수 없지만, 이미 켜져 있다면 끌 수는 있어야 한다.
+      onChanged: (!hasData && !ui.enabled)
+          ? null
+          : (on) async {
+              if (!on) {
+                await controller.disable();
+                return;
+              }
+              final result = await controller.enable();
+              if (result != EnableResult.ok && context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(_failure(result))));
+              }
+            },
     );
   }
 }
