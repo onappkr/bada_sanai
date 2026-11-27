@@ -14,14 +14,38 @@ class InMemoryTrackRepository implements TrackRepository {
   final _changes = StreamController<void>.broadcast();
   int _seq = 0;
 
-  @override
-  Future<String> start(DateTime startedAt) async => 'trk-${++_seq}';
+  /// 기록 중인 트랙의 시작 시각과 임시 버퍼.
+  final Map<String, DateTime> _recordingStart = {};
+  final Map<String, List<LocationSample>> _buffer = {};
 
   @override
-  Future<void> addSample(String trackId, LocationSample sample) async {}
+  Future<String> start(DateTime startedAt) async {
+    final id = 'trk-${++_seq}';
+    _recordingStart[id] = startedAt;
+    _buffer[id] = [];
+    return id;
+  }
+
+  @override
+  Future<void> addSample(String trackId, LocationSample sample) async {
+    _buffer[trackId]?.add(sample);
+  }
+
+  @override
+  Future<List<InterruptedTrack>> findInterrupted() async => [
+        for (final e in _recordingStart.entries)
+          InterruptedTrack(
+              id: e.key, startedAt: e.value, sampleCount: _buffer[e.key]?.length ?? 0),
+      ]..sort((a, b) => a.startedAt.compareTo(b.startedAt));
+
+  @override
+  Future<List<LocationSample>> bufferedSamples(String trackId) async =>
+      List.of(_buffer[trackId] ?? const []);
 
   @override
   Future<void> finish(String trackId, TrackResult result) async {
+    _recordingStart.remove(trackId);
+    _buffer.remove(trackId);
     _candidates[trackId] = [
       for (final c in result.candidates)
         _Candidate('cand-${++_seq}', trackId, c.lat, c.lng, c.dwell),
@@ -31,6 +55,8 @@ class InMemoryTrackRepository implements TrackRepository {
 
   @override
   Future<void> discard(String trackId) async {
+    _recordingStart.remove(trackId);
+    _buffer.remove(trackId);
     _candidates.remove(trackId);
     _changes.add(null);
   }

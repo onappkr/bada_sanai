@@ -102,4 +102,19 @@ void main() {
     expect(await repo.watchPendingCandidates(id).first, isEmpty);
     expect(await points.watchAll().first, isEmpty);
   });
+
+  test('기록 중으로 남은 트랙과 임시 점을 중단된 기록으로 찾는다', () async {
+    final id = await repo.start(t0);
+    await repo.addSample(id, s(1));
+    await repo.addSample(id, s(0));
+    final done = await repo.start(t0.add(const Duration(hours: 1)));
+    await repo.finish(done, result());
+
+    final found = await repo.findInterrupted();
+    expect(found.map((e) => e.id), [id]); // 끝낸 트랙은 제외
+    expect(found.single.sampleCount, 2);
+
+    final samples = await repo.bufferedSamples(id);
+    expect(samples.map((e) => e.time.minute), [0, 1]); // 기록 시각 순
+  });
 }

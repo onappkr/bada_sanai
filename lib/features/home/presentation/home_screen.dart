@@ -12,6 +12,7 @@ import '../../species/domain/species_catalog.dart';
 import '../../species/domain/species_stats.dart';
 import '../../tracking/application/tracking_providers.dart';
 import '../../tracking/domain/track_recorder.dart';
+import '../../tracking/domain/track_recovery.dart';
 
 /// 홈에 보여 줄 최근 일지 개수.
 const homeRecentLogCount = 3;
@@ -40,6 +41,7 @@ class HomeScreen extends ConsumerWidget {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
+          const _InterruptedBanner(),
           _RecordCard(state: recorder),
           const SizedBox(height: 16),
           Row(
@@ -180,6 +182,59 @@ class _SeasonCard extends StatelessWidget {
             : names.join(' · ')),
         trailing: const Icon(Icons.chevron_right),
         onTap: () => context.push(Routes.species),
+      ),
+    );
+  }
+}
+
+/// 앱이 도중에 꺼져 끝맺지 못한 경로 기록이 있으면 저장하거나 버리게 한다.
+class _InterruptedBanner extends ConsumerWidget {
+  const _InterruptedBanner();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final tracks = ref.watch(interruptedTracksProvider).value;
+    if (tracks == null || tracks.isEmpty) return const SizedBox.shrink();
+    final t = tracks.first;
+    final repo = ref.read(trackRepositoryProvider);
+
+    return Card(
+      color: Theme.of(context).colorScheme.tertiaryContainer,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('끝나지 않은 경로 기록이 있어요',
+                style: Theme.of(context).textTheme.titleMedium),
+            const SizedBox(height: 4),
+            Text('${formatDateTime(t.startedAt)}에 시작한 기록이에요. '
+                '남아 있는 위치 ${t.sampleCount}개로 마무리할까요?'),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                TextButton(
+                  onPressed: () async {
+                    await repo.discard(t.id);
+                    ref.invalidate(interruptedTracksProvider);
+                  },
+                  child: const Text('버리기'),
+                ),
+                const SizedBox(width: 8),
+                FilledButton(
+                  onPressed: () async {
+                    final outcome = await recoverTrack(repo, t);
+                    ref.invalidate(interruptedTracksProvider);
+                    if (outcome == RecoveryOutcome.saved && context.mounted) {
+                      context.push(Routes.candidatesOf(t.id));
+                    }
+                  },
+                  child: const Text('저장'),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

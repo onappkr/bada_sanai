@@ -52,6 +52,12 @@ class FakeRepo implements TrackRepository {
 
   @override
   Future<void> dismissCandidate(String candidateId) async {}
+
+  @override
+  Future<List<InterruptedTrack>> findInterrupted() async => const [];
+
+  @override
+  Future<List<LocationSample>> bufferedSamples(String trackId) async => const [];
 }
 
 class FakeSource implements LocationSource {
