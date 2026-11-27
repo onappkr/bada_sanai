@@ -6,7 +6,8 @@ plugins {
 
 android {
     namespace = "kr.onapp.bada_sanai"
-    compileSdk = flutter.compileSdkVersion
+    // flutter_local_notifications·androidx.core가 37 이상을 요구한다.
+    compileSdk = maxOf(flutter.compileSdkVersion, 37)
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
