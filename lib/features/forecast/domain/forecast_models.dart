@@ -148,3 +148,16 @@ String windDirectionLabel(int deg) {
   final index = (((deg % 360 + 360) % 360) / 45).round() % 8;
   return '${names[index]}풍';
 }
+
+/// 하늘 상태 코드를 한글로. 모르는 코드는 그대로 보여 준다. 값이 없으면 null.
+String? skyLabel(String? code) {
+  if (code == null) return null;
+  const names = {
+    'clear': '맑음',
+    'cloudy': '구름 많음',
+    'overcast': '흐림',
+    'rain': '비',
+    'snow': '눈',
+  };
+  return names[code] ?? code;
+}

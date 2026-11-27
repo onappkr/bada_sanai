@@ -2,13 +2,16 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../forecast/application/forecast_providers.dart';
 import '../../photo/application/photo_providers.dart';
 import '../../photo/domain/photo_models.dart';
 import '../../photo/presentation/photo_widgets.dart';
 import '../../point/application/point_providers.dart';
 import '../../species/domain/species_catalog.dart';
+import '../../tracking/application/tracking_providers.dart';
 import '../application/catch_log_providers.dart';
 import '../domain/catch_log_models.dart';
+import '../domain/log_environment.dart';
 import 'date_format.dart';
 
 /// S05 일지 작성·수정. [id]가 있으면 수정 모드.
@@ -35,6 +38,7 @@ class _CatchLogFormScreenState extends ConsumerState<CatchLogFormScreen> {
   DateTime _fishedAt = DateTime.now();
   String? _pointId;
   String? _savedId;
+  Future<LogEnvironment?>? _envFuture;
   final List<PhotoSlot> _photos = [];
   final _memo = TextEditingController();
   final Map<String, TextEditingController> _detail = {};
@@ -48,6 +52,13 @@ class _CatchLogFormScreenState extends ConsumerState<CatchLogFormScreen> {
     if (widget.id != null) {
       _loading = true;
       _load();
+    } else {
+      // 새 일지: 열 때부터 위치·물때·날씨를 모아 두면 저장할 때 기다리지 않는다.
+      // 권한 창은 띄우지 않고, 얻지 못하면(오프라인 등) 비워 둔다.
+      _envFuture = captureEnvironment(
+        source: ref.read(passiveLocationSourceProvider),
+        forecastService: () => ref.read(forecastServiceProvider.future),
+      );
     }
   }
 
@@ -123,7 +134,15 @@ class _CatchLogFormScreenState extends ConsumerState<CatchLogFormScreen> {
       items.add(CatchItemInput(
           speciesCode: r.species, lengthCm: len, count: r.count));
     }
+    // 새 일지이고 낚시한 시각이 지금과 가까울 때만 환경을 붙인다(지난 일지에 오늘 날씨를 붙이면 틀리다).
+    LogEnvironment? environment;
+    if (widget.id == null &&
+        _savedId == null &&
+        shouldAttachEnvironment(_fishedAt, DateTime.now())) {
+      environment = await _envFuture?.timeout(const Duration(seconds: 2), onTimeout: () => null);
+    }
     final input = CatchLogInput(
+      environment: environment,
       genre: _genre,
       fishedAt: _fishedAt,
       pointId: _pointId,

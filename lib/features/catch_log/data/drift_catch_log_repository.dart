@@ -5,6 +5,7 @@ import 'package:uuid/uuid.dart';
 
 import '../../../core/db/app_database.dart';
 import '../domain/catch_log_models.dart';
+import '../domain/log_environment.dart';
 import '../domain/catch_log_repository.dart';
 
 class DriftCatchLogRepository implements CatchLogRepository {
@@ -50,6 +51,11 @@ class DriftCatchLogRepository implements CatchLogRepository {
             pointId: Value(input.pointId),
             memo: Value(_blankToNull(input.memo)),
             genreDetail: Value(_encodeDetail(input.genreDetail)),
+            lat: Value(input.environment?.lat),
+            lng: Value(input.environment?.lng),
+            env: input.environment == null
+                ? const Value.absent()
+                : Value(input.environment!.toEnvJson()),
             createdAt: now,
             updatedAt: now,
           ));
@@ -69,6 +75,12 @@ class DriftCatchLogRepository implements CatchLogRepository {
         pointId: Value(input.pointId),
         memo: Value(_blankToNull(input.memo)),
         genreDetail: Value(_encodeDetail(input.genreDetail)),
+        // 환경은 일지를 처음 쓸 때만 붙으므로, 수정에서 값이 없으면 저장된 값을 그대로 둔다.
+        lat: input.environment == null ? const Value.absent() : Value(input.environment!.lat),
+        lng: input.environment == null ? const Value.absent() : Value(input.environment!.lng),
+        env: input.environment == null
+            ? const Value.absent()
+            : Value(input.environment!.toEnvJson()),
         updatedAt: Value(_now().toUtc()),
       ));
       if (updated == 0) throw StateError('일지를 찾을 수 없습니다: $id');
@@ -123,8 +135,14 @@ class DriftCatchLogRepository implements CatchLogRepository {
           memo: l.memo,
           genreDetail: _decodeDetail(l.genreDetail),
           items: byLog[l.id] ?? const [],
+          environment: _environmentOf(l),
         ),
     ];
+  }
+
+  static LogEnvironment? _environmentOf(CatchLog l) {
+    final env = LogEnvironment.fromColumns(lat: l.lat, lng: l.lng, envJson: l.env);
+    return env.isEmpty ? null : env;
   }
 
   static String? _blankToNull(String? s) {

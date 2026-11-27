@@ -182,6 +182,7 @@ Future<void> main() async {
       permissionServiceProvider.overrideWithValue(_PreviewPermissionService()),
       trackRepositoryProvider.overrideWithValue(tracks),
       locationSourceProvider.overrideWithValue(SimulatedLocationSource()),
+      passiveLocationSourceProvider.overrideWithValue(SimulatedLocationSource()),
       ruleBookProvider.overrideWith((ref) => sampleBook),
       forecastSourceProvider.overrideWithValue(_PreviewForecastSource()),
       forecastCacheProvider.overrideWithValue(InMemoryForecastCache()),

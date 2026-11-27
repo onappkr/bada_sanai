@@ -13,6 +13,11 @@ final trackRepositoryProvider = Provider<TrackRepository>(
 final locationSourceProvider =
     Provider<LocationSource>((ref) => const GeolocatorLocationSource());
 
+/// 권한 창을 띄우지 않는 위치 원천(권한이 이미 있을 때만 위치를 준다).
+final passiveLocationSourceProvider = Provider<LocationSource>(
+  (ref) => const GeolocatorLocationSource(requestPermission: false),
+);
+
 /// 경로 기록 상태. 화면을 벗어나도 기록은 이어지도록 앱 전체에서 하나만 둔다.
 class TrackingController extends Notifier<RecorderState> {
   late final TrackRecorder _recorder;
