@@ -50,3 +50,12 @@ final interruptedTracksProvider =
   final all = await ref.watch(trackRepositoryProvider).findInterrupted();
   return [for (final t in all) if (t.id != activeId) t];
 });
+
+/// 저장된 경로 목록(최근 시작 순).
+final savedTracksProvider = StreamProvider.autoDispose<List<SavedTrack>>(
+  (ref) => ref.watch(trackRepositoryProvider).watchSavedTracks(),
+);
+
+final savedTrackProvider = StreamProvider.autoDispose.family<SavedTrack?, String>(
+  (ref, id) => ref.watch(trackRepositoryProvider).watchSavedTrack(id),
+);

@@ -19,6 +19,11 @@ class PointListScreen extends ConsumerWidget {
         title: const Text('내 포인트'),
         actions: [
           IconButton(
+            tooltip: '내 경로',
+            icon: const Icon(Icons.route),
+            onPressed: () => context.push(Routes.tracks),
+          ),
+          IconButton(
             tooltip: '링크로 포인트 받기',
             icon: const Icon(Icons.link),
             onPressed: () => showPasteLinkDialog(context),

@@ -117,4 +117,24 @@ void main() {
     final samples = await repo.bufferedSamples(id);
     expect(samples.map((e) => e.time.minute), [0, 1]); // 기록 시각 순
   });
+
+  test('저장된 경로만 최근 시작 순으로 보이고, 버린 경로는 사라진다', () async {
+    final a = await repo.start(t0);
+    final b = await repo.start(t0.add(const Duration(days: 1)));
+    final c = await repo.start(t0.add(const Duration(days: 2))); // 끝내지 않음
+    await repo.finish(a, result());
+    await repo.finish(b, result());
+
+    var saved = await repo.watchSavedTracks().first;
+    expect(saved.map((e) => e.id), [b, a]);
+    expect(saved.first.distanceM, 120);
+    expect(saved.first.encodedPolyline, '_p~iF~ps|U');
+    expect(saved.first.duration, const Duration(minutes: 12));
+    expect(saved.any((e) => e.id == c), isFalse);
+
+    await repo.discard(a);
+    saved = await repo.watchSavedTracks().first;
+    expect(saved.map((e) => e.id), [b]);
+    expect(await repo.watchSavedTrack(a).first, isNull);
+  });
 }

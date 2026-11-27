@@ -17,6 +17,27 @@ class CandidateView {
   final Duration dwell;
 }
 
+/// 저장이 끝난 경로 한 건.
+class SavedTrack {
+  const SavedTrack({
+    required this.id,
+    required this.startedAt,
+    required this.endedAt,
+    required this.distanceM,
+    required this.encodedPolyline,
+  });
+
+  final String id;
+  final DateTime startedAt;
+  final DateTime endedAt;
+  final double distanceM;
+
+  /// 단순화한 경로(Encoded Polyline). 점이 없었다면 빈 문자열.
+  final String encodedPolyline;
+
+  Duration get duration => endedAt.difference(startedAt);
+}
+
 /// 앱이 중간에 종료되어 끝맺지 못한 기록.
 class InterruptedTrack {
   const InterruptedTrack({
@@ -54,6 +75,11 @@ abstract interface class TrackRepository {
 
   /// 후보를 버린다.
   Future<void> dismissCandidate(String candidateId);
+
+  /// 저장이 끝난 경로를 시작 시각 내림차순으로 관찰한다.
+  Stream<List<SavedTrack>> watchSavedTracks();
+
+  Stream<SavedTrack?> watchSavedTrack(String trackId);
 
   /// '기록 중' 상태로 남은 트랙(앱이 도중에 꺼진 경우). 오래된 순.
   Future<List<InterruptedTrack>> findInterrupted();

@@ -88,6 +88,20 @@ Future<void> main() async {
     );
   }
 
+  // 저장된 경로 하나(영도 방파제 쪽을 걷다 머문 기록)를 미리 저장해 둔다.
+  final savedStart = now.subtract(const Duration(days: 1, hours: 2));
+  final savedId = await tracks.start(savedStart);
+  final savedSamples = [
+    for (var i = 0; i <= 25; i++)
+      LocationSample(
+        lat: 35.0762 + (i < 12 ? i * 0.0002 : 12 * 0.0002) + (i % 3) * 0.00002,
+        lng: 129.0850 + (i < 12 ? i * 0.0001 : 12 * 0.0001 + (i - 12) * 0.00018),
+        time: savedStart.add(Duration(minutes: i * 2)),
+        accuracyM: 6,
+      ),
+  ];
+  await tracks.finish(savedId, summarizeTrack(savedStart, savedSamples));
+
   runApp(ProviderScope(
     overrides: [
       catchLogRepositoryProvider.overrideWithValue(repo),
