@@ -42,10 +42,16 @@ class ArrivalUiState {
 
 class ArrivalController extends Notifier<ArrivalUiState> {
   ArrivalWatcher? _watcher;
+  bool _disposed = false;
 
   @override
   ArrivalUiState build() {
-    ref.onDispose(() => _watcher?.stop());
+    _disposed = false;
+    ref.onDispose(() {
+      // 감시를 멈추면 상태 변화 알림이 오는데, 이미 해제된 notifier에 state를 쓰면 오류가 난다.
+      _disposed = true;
+      _watcher?.stop();
+    });
     return const ArrivalUiState();
   }
 
@@ -83,7 +89,7 @@ class ArrivalController extends Notifier<ArrivalUiState> {
     await _watcher?.stop();
     _watcher = null;
     await ref.read(settingsRepositoryProvider).setArrivalWatchEnabled(false);
-    state = const ArrivalUiState();
+    if (!_disposed) state = const ArrivalUiState();
   }
 
   Future<void> _start() async {
@@ -93,8 +99,11 @@ class ArrivalController extends Notifier<ArrivalUiState> {
       source: ref.read(arrivalSourceProvider),
       cells: cells,
       onArrival: _onArrival,
-      onChanged: (s) => state = ArrivalUiState(enabled: true, watch: s),
+      onChanged: (s) {
+        if (!_disposed) state = ArrivalUiState(enabled: true, watch: s);
+      },
     );
+    if (_disposed) return;
     _watcher = watcher;
     state = ArrivalUiState(enabled: true, watch: watcher.state);
     await watcher.start();
@@ -102,7 +111,7 @@ class ArrivalController extends Notifier<ArrivalUiState> {
 
   void _onArrival(ArrivalEvent event) {
     // 이미 경로를 기록하는 중이면 도착을 또 물을 필요가 없다.
-    if (ref.read(trackingProvider).active) return;
+    if (_disposed || ref.read(trackingProvider).active) return;
     ref.read(notificationServiceProvider).showArrival();
   }
 }
