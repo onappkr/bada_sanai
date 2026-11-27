@@ -4,6 +4,8 @@ import 'package:material_ui/material_ui.dart';
 import '../features/catch_log/presentation/catch_log_detail_screen.dart';
 import '../features/catch_log/presentation/catch_log_form_screen.dart';
 import '../features/catch_log/presentation/catch_log_list_screen.dart';
+import '../features/share/presentation/share_sheet_screen.dart';
+import '../features/share/presentation/shared_point_screen.dart';
 import '../features/point/presentation/point_detail_screen.dart';
 import '../features/point/presentation/point_form_screen.dart';
 import '../features/point/presentation/point_list_screen.dart';
@@ -192,22 +194,15 @@ GoRouter createRouter({String initialLocation = Routes.home}) => GoRouter(
         GoRoute(
           path: Routes.share,
           parentNavigatorKey: _rootKey,
-          builder: (c, s) => _ph(
-            'S15',
-            '공유 시트',
-            '카카오톡·문자·링크 복사',
-            params: {'pointId': s.pathParameters['pointId']!},
-          ),
+          builder: (c, s) =>
+              ShareSheetScreen(pointId: s.pathParameters['pointId']!),
         ),
         GoRoute(
           path: Routes.sharedPoint,
           parentNavigatorKey: _rootKey,
-          builder: (c, s) => _ph(
-            'S16',
-            '공유 받은 포인트',
-            '지도 미리보기, 내 포인트에 저장',
-            params: {'fragment': s.uri.fragment},
-          ),
+          // 앱 링크 자동 열기(딥링크)가 붙으면 https://도메인/p#조각 을 /p?f=조각 으로 바꿔 넘긴다.
+          builder: (c, s) =>
+              SharedPointScreen(fragment: s.uri.queryParameters['f']),
         ),
       ],
     );
