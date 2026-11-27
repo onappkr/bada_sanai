@@ -44,12 +44,23 @@ void main() {
   CatchItem item(String id, String logId, String species) => CatchItem(
       id: id, logId: logId, speciesCode: species, lengthCm: null, count: 1, memo: null);
 
+  Photo photo(String id, String ownerId, {OwnerType type = OwnerType.log}) => Photo(
+        id: id,
+        ownerType: type,
+        ownerId: ownerId,
+        filePath: 'photos/$id.jpg',
+        width: null,
+        height: null,
+        createdAt: t0,
+      );
+
   BackupSnapshot snap({
     List<Point> points = const [],
     List<CatchLog> logs = const [],
     List<CatchItem> items = const [],
+    List<Photo> photos = const [],
   }) =>
-      BackupSnapshot(exportedAt: t1, points: points, logs: logs, items: items);
+      BackupSnapshot(exportedAt: t1, points: points, logs: logs, items: items, photos: photos);
 
   setUp(() {
     db = AppDatabase(NativeDatabase.memory());
@@ -110,5 +121,26 @@ void main() {
     final deleted = log('l1', at: t1).copyWith(deletedAt: Value(t1));
     await repo.restore(snap(logs: [deleted]));
     expect((await repo.snapshot()).logs.single.deletedAt, isNotNull);
+  });
+
+  test('사진: 일지·포인트에 연결해 복원하고, 같은 id는 중복하지 않는다', () async {
+    final data = snap(
+      points: [point('p1')],
+      logs: [log('l1')],
+      photos: [photo('a', 'l1'), photo('b', 'p1', type: OwnerType.point)],
+    );
+    final r = await repo.restore(data);
+    expect(r.photosAdded, 2);
+    expect((await repo.snapshot()).photos.map((e) => e.id).toSet(), {'a', 'b'});
+
+    final again = await repo.restore(data);
+    expect(again.photosAdded, 0);
+    expect((await repo.snapshot()).photos.length, 2);
+  });
+
+  test('사진: 주인이 없는 사진은 연결하지 않는다', () async {
+    final r = await repo.restore(snap(photos: [photo('x', 'ghost')]));
+    expect(r.photosAdded, 0);
+    expect((await repo.snapshot()).photos, isEmpty);
   });
 }

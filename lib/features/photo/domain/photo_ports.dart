@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter/painting.dart' show ImageProvider;
 
 import 'photo_models.dart';
@@ -22,6 +24,12 @@ abstract interface class PhotoStore {
   Future<String> save(PickedPhoto photo);
 
   Future<void> delete(String path);
+
+  /// 저장된 파일의 내용(백업용). 없거나 경로가 안전하지 않으면 null.
+  Future<Uint8List?> readBytes(String path);
+
+  /// 정해진 상대 경로에 파일을 쓴다(백업 복원용). 안전하지 않은 경로는 [ArgumentError].
+  Future<void> writeAt(String path, Uint8List bytes);
 
   /// 보관 중인 사진 파일을 모두 지운다. 이미 없으면 아무것도 하지 않는다.
   Future<void> deleteAll();

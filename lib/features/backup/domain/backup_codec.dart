@@ -1,14 +1,16 @@
 import 'dart:convert';
 
-import '../../../core/db/app_database.dart' show CatchItem, CatchLog, Point;
+import '../../../core/db/app_database.dart' show CatchItem, CatchLog, Photo, Point;
+import 'backup_archive.dart';
 import 'backup_models.dart';
 
-/// 백업 파일 형식 v1(JSON). 순수 Dart라 어디서나 테스트할 수 있다.
+/// 백업 기록 형식(JSON). v2에서 `photos`(사진 메타데이터)가 늘었고, v1 파일도 읽는다.
+/// 순수 Dart라 어디서나 테스트할 수 있다.
 class BackupCodec {
   const BackupCodec._();
 
   static const app = 'bada_sanai';
-  static const version = 1;
+  static const version = 2;
 
   static String encode(BackupSnapshot s) => const JsonEncoder.withIndent(' ').convert({
         'app': app,
@@ -17,6 +19,7 @@ class BackupCodec {
         'points': [for (final p in s.points) p.toJson()],
         'logs': [for (final l in s.logs) l.toJson()],
         'items': [for (final i in s.items) i.toJson()],
+        'photos': [for (final p in s.photos) p.toJson()],
       });
 
   /// 읽을 수 없거나 앞뒤가 맞지 않으면 [FormatException]. 파일은 믿지 않고 검증한다.
@@ -41,12 +44,15 @@ class BackupCodec {
       final points = _list(root['points'], Point.fromJson);
       final logs = _list(root['logs'], CatchLog.fromJson);
       final items = _list(root['items'], CatchItem.fromJson);
-      _validate(points, logs, items);
+      // v1 파일에는 photos가 없다.
+      final photos = root['photos'] == null ? <Photo>[] : _list(root['photos'], Photo.fromJson);
+      _validate(points, logs, items, photos);
       return BackupSnapshot(
         exportedAt: exportedAt,
         points: points,
         logs: logs,
         items: items,
+        photos: photos,
       );
     } on FormatException {
       rethrow;
@@ -62,7 +68,7 @@ class BackupCodec {
   }
 
   static void _validate(
-      List<Point> points, List<CatchLog> logs, List<CatchItem> items) {
+      List<Point> points, List<CatchLog> logs, List<CatchItem> items, List<Photo> photos) {
     void unique(Iterable<String> ids, String what) {
       final seen = <String>{};
       for (final id in ids) {
@@ -73,6 +79,7 @@ class BackupCodec {
     unique(points.map((e) => e.id), '포인트');
     unique(logs.map((e) => e.id), '일지');
     unique(items.map((e) => e.id), '조과');
+    unique(photos.map((e) => e.id), '사진');
 
     for (final p in points) {
       if (p.name.trim().isEmpty ||
@@ -89,6 +96,11 @@ class BackupCodec {
         throw const FormatException('일지 없이 남은 조과 기록이 있습니다');
       }
       if (i.count < 1) throw const FormatException('올바르지 않은 조과 기록이 있습니다');
+    }
+    for (final ph in photos) {
+      if (!BackupArchive.isSafePhotoPath(ph.filePath)) {
+        throw const FormatException('올바르지 않은 사진 경로가 들어 있습니다');
+      }
     }
   }
 }

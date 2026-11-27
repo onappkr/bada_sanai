@@ -1,10 +1,12 @@
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:flutter/painting.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
 
+import '../../backup/domain/backup_archive.dart';
 import '../domain/photo_models.dart';
 import '../domain/photo_ports.dart';
 
@@ -40,6 +42,25 @@ class FilePhotoStore implements PhotoStore {
     final file = File(p.join(root.path, path));
     if (await file.exists()) await file.delete();
   }
+
+  @override
+  Future<Uint8List?> readBytes(String path) async {
+    if (!_safe(path)) return null;
+    final root = await prepare();
+    final file = File(p.join(root.path, path));
+    return await file.exists() ? file.readAsBytes() : null;
+  }
+
+  @override
+  Future<void> writeAt(String path, Uint8List bytes) async {
+    if (!_safe(path)) throw ArgumentError.value(path, 'path', '안전하지 않은 사진 경로');
+    final root = await prepare();
+    final file = File(p.join(root.path, path));
+    await file.parent.create(recursive: true);
+    await file.writeAsBytes(bytes, flush: true);
+  }
+
+  static bool _safe(String path) => BackupArchive.isSafePhotoPath(path);
 
   @override
   Future<void> deleteAll() async {

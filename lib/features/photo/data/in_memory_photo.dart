@@ -22,6 +22,12 @@ class InMemoryPhotoStore implements PhotoStore {
   Future<void> delete(String path) async => files.remove(path);
 
   @override
+  Future<Uint8List?> readBytes(String path) async => files[path];
+
+  @override
+  Future<void> writeAt(String path, Uint8List bytes) async => files[path] = bytes;
+
+  @override
   Future<void> deleteAll() async => files.clear();
 
   @override
