@@ -49,6 +49,7 @@ dependencies:
   file_picker: ^13.4.1
   permission_handler: ^13.0.2
   geolocator: ^14.0.1
+  image: ^4.13.1
 
 dev_dependencies:
   flutter_test:
