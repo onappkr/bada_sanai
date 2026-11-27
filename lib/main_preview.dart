@@ -2,6 +2,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
 import 'app/app.dart';
+import 'features/backup/application/backup_providers.dart';
+import 'features/backup/domain/backup_models.dart';
+import 'features/backup/domain/backup_ports.dart';
 import 'features/catch_log/application/catch_log_providers.dart';
 import 'features/catch_log/data/in_memory_catch_log_repository.dart';
 import 'features/catch_log/domain/catch_log_models.dart';
@@ -68,9 +71,32 @@ Future<void> main() async {
       pointRepositoryProvider.overrideWithValue(points),
       shareImportRepositoryProvider
           .overrideWithValue(InMemoryShareImportRepository(points)),
+      backupRepositoryProvider.overrideWithValue(_PreviewBackupRepository()),
+      backupFileGatewayProvider.overrideWithValue(_PreviewBackupGateway()),
       photoRepositoryProvider.overrideWithValue(InMemoryPhotoRepository()),
       photoStoreProvider.overrideWithValue(InMemoryPhotoStore()),
     ],
     child: const BadaSanaiApp(),
   ));
+}
+
+/// 미리보기용 백업 가짜. 실제 파일을 만들지 않고 결과 안내만 보여 준다.
+class _PreviewBackupRepository implements BackupRepository {
+  @override
+  Future<BackupSnapshot> snapshot() async => BackupSnapshot(
+      exportedAt: DateTime.now().toUtc(), points: const [], logs: const [], items: const []);
+
+  @override
+  Future<RestoreResult> restore(BackupSnapshot snapshot) async =>
+      const RestoreResult(added: 3, updated: 1, skipped: 2);
+}
+
+class _PreviewBackupGateway implements BackupFileGateway {
+  @override
+  Future<void> export(String filename, String json) async {}
+
+  @override
+  Future<String?> pick() async =>
+      '{"app":"bada_sanai","version":1,"exportedAt":"2026-11-27T00:00:00Z",'
+      '"points":[],"logs":[],"items":[]}';
 }
