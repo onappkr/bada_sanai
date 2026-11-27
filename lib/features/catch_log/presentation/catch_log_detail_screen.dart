@@ -3,6 +3,9 @@ import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../app/routes.dart';
+import '../../photo/application/photo_providers.dart';
+import '../../photo/domain/photo_models.dart';
+import '../../photo/presentation/photo_widgets.dart';
 import '../../point/application/point_providers.dart';
 import '../../species/domain/species_catalog.dart';
 import '../application/catch_log_providers.dart';
@@ -74,6 +77,10 @@ class _Body extends ConsumerWidget {
     final text = Theme.of(context).textTheme;
     final pointId = log.pointId;
     final point = pointId == null ? null : ref.watch(pointProvider(pointId));
+    final photos = ref
+            .watch(photosByOwnerProvider((type: OwnerType.log, id: log.id)))
+            .value ??
+        const [];
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
@@ -91,6 +98,10 @@ class _Body extends ConsumerWidget {
                 ? null
                 : () => context.push(Routes.pointDetailOf(pointId)),
           ),
+        if (photos.isNotEmpty) ...[
+          const SizedBox(height: 16),
+          PhotoStrip(photos: photos),
+        ],
         const SizedBox(height: 16),
         Text('조과', style: text.titleMedium),
         if (log.items.isEmpty) const Text('기록된 조과가 없습니다.'),
