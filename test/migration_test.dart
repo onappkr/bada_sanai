@@ -15,7 +15,7 @@ import 'generated_migrations/schema.dart';
 ///   4) `dart run drift_dev schema generate drift_schemas/ test/generated_migrations/`
 ///   5) `schema_versions.dart`의 from(N)To(N+1) 단계를 채우고, 아래 [latest]를 올리고,
 ///      이전 버전 DB에서 이행하는 시험을 더한다(`verifier.schemaAt(이전버전)` → `migrateAndValidate`).
-const latest = 1;
+const latest = 2;
 
 void main() {
   late SchemaVerifier verifier;
@@ -35,6 +35,20 @@ void main() {
   test('새로 설치한 DB(onCreate)의 모양이 코드의 스키마와 같다(인덱스 포함)', () async {
     final db = AppDatabase(NativeDatabase.memory());
     await db.validateDatabaseSchema();
+    await db.close();
+  });
+
+  test('v1 DB를 v2로 올리면 기존 기록은 그대로이고 팀 테이블이 생긴다', () async {
+    final schema = await verifier.schemaAt(1);
+    // v1 모양 그대로의 DB에 포인트 한 건을 직접 넣어 둔다.
+    schema.rawDatabase.execute(
+      "INSERT INTO points (id, name, lat, lng, source, created_at, updated_at) "
+      "VALUES ('p1', '방파제', 35.0, 129.0, 'manual', 0, 0)",
+    );
+    final db = AppDatabase(schema.newConnection());
+    await verifier.migrateAndValidate(db, 2);
+    expect(await db.select(db.points).get(), hasLength(1));
+    expect(await db.select(db.teams).get(), isEmpty);
     await db.close();
   });
 }

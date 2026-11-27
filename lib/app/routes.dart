@@ -23,6 +23,13 @@ abstract final class Routes {
   static const sharedPoint = '/p'; // S16 (딥링크: 데이터는 fragment)
   static const settings = '/settings'; // S17
   static const backup = '/settings/backup'; // S18
+  static const teams = '/teams'; // 2차: 팀 목록
+  static const team = '/teams/:id'; // 팀 상세
+  static const tripNew = '/teams/:id/trips/new'; // 출조 추가
+  static const trip = '/trips/:id'; // 출조 상세(비용·정산)
+  static const tripEdit = '/trips/:id/edit';
+  static const expenseNew = '/trips/:id/expenses/new';
+  static const expenseEdit = '/trips/:id/expenses/:expenseId';
 
   /// [fragment]는 링크의 `v=1&d=...` 부분. 쿼리 `f`로 넘긴다.
   static String sharedPointOf(String fragment) =>
@@ -34,4 +41,10 @@ abstract final class Routes {
   static String trackDetailOf(String id) => '/tracks/$id';
   static String candidatesOf(String trackId) => '/tracking/$trackId/candidates';
   static String shareOf(String pointId) => '/share/$pointId';
+  static String teamOf(String id) => '/teams/$id';
+  static String tripNewOf(String teamId) => '/teams/$teamId/trips/new';
+  static String tripOf(String id) => '/trips/$id';
+  static String tripEditOf(String id) => '/trips/$id/edit';
+  static String expenseNewOf(String tripId) => '/trips/$tripId/expenses/new';
+  static String expenseEditOf(String tripId, String id) => '/trips/$tripId/expenses/$id';
 }

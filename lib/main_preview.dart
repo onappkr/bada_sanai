@@ -10,6 +10,9 @@ import 'features/arrival/application/arrival_providers.dart';
 import 'features/arrival/data/local_notification_service.dart';
 import 'features/arrival/domain/coast_cells.dart';
 import 'features/backup/application/backup_providers.dart';
+import 'features/team/application/team_providers.dart';
+import 'features/team/data/in_memory_team_repository.dart';
+import 'features/team/domain/team_models.dart';
 import 'features/backup/domain/backup_models.dart';
 import 'features/backup/domain/backup_ports.dart';
 import 'features/catch_log/application/catch_log_providers.dart';
@@ -117,6 +120,23 @@ Future<void> main() async {
   ];
   await tracks.finish(savedId, summarizeTrack(savedStart, savedSamples));
 
+  // 팀·정산 샘플: 세 명이 다녀온 출조에 비용 두 건.
+  final teams = InMemoryTeamRepository();
+  final teamId = await teams.createTeam('주말 바다팀');
+  final a = await teams.addMember(teamId, '철수');
+  final b = await teams.addMember(teamId, '영희');
+  final c = await teams.addMember(teamId, '민수');
+  final tripId = await teams.createTrip(
+      teamId,
+      TripInput(
+          title: '가덕도 갯바위',
+          date: now.subtract(const Duration(days: 3)),
+          participantIds: [a, b, c]));
+  await teams.addExpense(tripId,
+      ExpenseInput(description: '기름값', amount: 50000, payerId: a, targetIds: [a, b, c]));
+  await teams.addExpense(tripId,
+      ExpenseInput(description: '미끼·밥', amount: 31000, payerId: b, targetIds: [a, b, c]));
+
   final photoRepo = InMemoryPhotoRepository();
   final photoStore = InMemoryPhotoStore();
   // 데이터 모두 삭제를 시험할 수 있게 메모리 저장소를 실제로 비운다.
@@ -199,6 +219,8 @@ Future<void> main() async {
       deepLinkServiceProvider.overrideWithValue(const NoDeepLinkService()),
       forecastSourceProvider.overrideWithValue(_PreviewForecastSource()),
       forecastCacheProvider.overrideWithValue(InMemoryForecastCache()),
+      teamRepositoryProvider.overrideWithValue(teams),
+      textSharerProvider.overrideWithValue((text, {subject}) async => debugPrint('[가짜 공유] $text')),
       backupRepositoryProvider.overrideWithValue(_PreviewBackupRepository()),
       backupFileGatewayProvider.overrideWithValue(_PreviewBackupGateway()),
       photoRepositoryProvider.overrideWithValue(photoRepo),

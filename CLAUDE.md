@@ -8,7 +8,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 개요
 
-"바다 사나이": 루어·원투·찍낚시·보트 낚시 기록 앱(Flutter, Android/iOS). 1차는 서버 없이 기기 안(SQLite)에서만 동작한다. 일지, 포인트, 사진, 경로 기록, 포인트 공유 링크, 백업·복원, 이 시기 내 어종이 구현되어 있다. 팀·정산(2차)과 데이터 기반 추천(3차)은 설계만 있고 코드는 순수 로직(`features/team/domain/split_calculator.dart`)뿐이다. `web_viewer/`는 앱이 없는 사람이 공유 링크를 여는 정적 페이지다.
+"바다 사나이": 루어·원투·찍낚시·보트 낚시 기록 앱(Flutter, Android/iOS). 1차는 서버 없이 기기 안(SQLite)에서만 동작한다. 일지, 포인트, 사진, 경로 기록, 포인트 공유 링크, 백업·복원, 이 시기 내 어종이 구현되어 있다. 팀·정산(2차)은 **서버 없이 기기 안에서 한 사람(총무)이 이름으로 팀·출조·비용을 정리해 정산하는 방식**으로 구현되어 있다(`features/team/`; 팀원이 각자 앱으로 참여·승인하는 부분은 서버가 필요해 없다). 데이터 기반 추천(3차)은 설계만 있다. `web_viewer/`는 앱이 없는 사람이 공유 링크를 여는 정적 페이지다.
 
 ## 명령
 
@@ -42,6 +42,7 @@ flutter build web -t lib/main_preview.dart   # 화면 미리보기(아래 참고
 - 일지 환경 자동 기록(B5): `catch_log/domain/log_environment.dart`. 새 일지를 열면 백그라운드로 위치(권한 창을 띄우지 않는 `passiveLocationSourceProvider`)와 예보를 모아 두고, 저장할 때 **낚시한 시각이 지금과 3시간 이내일 때만** 붙인다(지난 일지에 오늘 날씨를 붙이면 틀리므로). 위치는 `catch_logs.lat/lng`, 예보는 `env` JSON에 저장하고, 수정할 때 환경을 주지 않으면 저장된 값을 유지한다.
 - 공유 링크: `share/data/share_link_codec.dart`(JSON → raw deflate → base64url, `#v=1&d=...`)는 `web_viewer/codec.js`와 **같은 형식**이어야 한다. 형식을 바꾸면 `v`를 올리고 양쪽을 함께 고친다. 압축은 웹에서도 돌도록 `dart:io` 대신 `archive` 패키지를 쓴다.
 - 백업: `backup/domain/backup_archive.dart`가 zip(`backup.json` + `photos/*`)을 만들고 읽는다(경로 탈출·용량 검증). 기록 형식은 `backup_codec.dart` v2(`photos` 메타데이터 추가, v1 JSON도 복원 가능). 복원은 id별 최신 병합이고 사진은 기기에 같은 id가 없고 주인이 있고 파일이 있을 때만 연결한다. 사진 파일 접근은 `BackupPhotoFiles` 포트(어댑터는 `PhotoStore`).
+- 팀·정산(`features/team`): 계산은 순수 로직(`split_calculator.dart`, `settlement.dart`의 `settle`), 저장은 `TeamRepository`(Drift·메모리 구현이 같은 계약 시험 `test/features/team_repository_test.dart`을 통과). 테이블 `teams/team_members/trips/trip_expenses`는 스키마 v2에서 추가됐다. 정산을 마감한 출조는 비용을 못 고치고(다시 열 수 있음), 비용에 쓰인 사람은 참여자에서 못 뺀다. 팀 기록은 아직 백업에 포함되지 않고, 전체 삭제에는 포함된다.
 - 사진: DB에는 상대 경로만, 파일은 앱 문서 폴더 `photos/`. 작성 화면에서 고른 사진은 저장 버튼을 누를 때에야 파일로 기록한다.
 
 ## 화면 미리보기

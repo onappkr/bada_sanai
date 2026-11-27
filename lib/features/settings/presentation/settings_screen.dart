@@ -29,6 +29,12 @@ class SettingsScreen extends ConsumerWidget {
             onTap: () => context.push(Routes.permissions),
           ),
           ListTile(
+            leading: const Icon(Icons.groups_outlined),
+            title: const Text('팀·정산'),
+            subtitle: const Text('함께 낚시한 비용을 나눠 정산해요'),
+            onTap: () => context.push(Routes.teams),
+          ),
+          ListTile(
             leading: const Icon(Icons.backup_outlined),
             title: const Text('백업·복원'),
             subtitle: const Text('기록을 파일로 보관하고 되살려요'),
@@ -43,7 +49,7 @@ class SettingsScreen extends ConsumerWidget {
           ListTile(
             leading: Icon(Icons.delete_forever_outlined, color: error),
             title: Text('내 데이터 모두 삭제', style: TextStyle(color: error)),
-            subtitle: const Text('일지·포인트·경로·사진을 이 기기에서 지워요'),
+            subtitle: const Text('일지·포인트·경로·사진·팀 정산을 이 기기에서 지워요'),
             onTap: () => _eraseFlow(context, ref),
           ),
         ],

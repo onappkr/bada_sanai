@@ -164,3 +164,72 @@ class AppSettings extends Table {
   @override
   Set<Column> get primaryKey => {key};
 }
+
+/// 2차: 팀(함께 낚시 다니는 사람들). 지금은 기기 안에서 한 사람이 총무로 정리하는 방식이다.
+@DataClassName('TeamRow')
+class Teams extends Table {
+  TextColumn get id => text()();
+  TextColumn get name => text()();
+
+  /// 끝전 부담 규칙: `payer`(결제자) 또는 `treasurer`(총무).
+  TextColumn get remainderRule => text().withDefault(const Constant('payer'))();
+  TextColumn get treasurerId => text().nullable()();
+  DateTimeColumn get createdAt => dateTime()();
+  DateTimeColumn get updatedAt => dateTime()();
+  DateTimeColumn get deletedAt => dateTime().nullable()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+@DataClassName('TeamMemberRow')
+@TableIndex(name: 'idx_team_member_team', columns: {#teamId})
+class TeamMembers extends Table {
+  TextColumn get id => text()();
+  TextColumn get teamId => text().references(Teams, #id)();
+  TextColumn get name => text()();
+  DateTimeColumn get createdAt => dateTime()();
+  DateTimeColumn get updatedAt => dateTime()();
+  DateTimeColumn get deletedAt => dateTime().nullable()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+/// 출조(함께 낚시한 날). 참여자는 팀 멤버 id의 JSON 배열.
+@DataClassName('TripRow')
+@TableIndex(name: 'idx_trip_team', columns: {#teamId})
+class Trips extends Table {
+  TextColumn get id => text()();
+  TextColumn get teamId => text().references(Teams, #id)();
+  TextColumn get title => text()();
+  DateTimeColumn get tripDate => dateTime()();
+  TextColumn get participantIds => text()();
+
+  /// 정산을 마감한 시각. 마감하면 비용을 고칠 수 없다.
+  DateTimeColumn get settledAt => dateTime().nullable()();
+  DateTimeColumn get createdAt => dateTime()();
+  DateTimeColumn get updatedAt => dateTime()();
+  DateTimeColumn get deletedAt => dateTime().nullable()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+/// 출조의 비용 한 건. 금액은 원 단위 정수, 대상자는 멤버 id의 JSON 배열.
+@DataClassName('TripExpenseRow')
+@TableIndex(name: 'idx_trip_expense_trip', columns: {#tripId})
+class TripExpenses extends Table {
+  TextColumn get id => text()();
+  TextColumn get tripId => text().references(Trips, #id)();
+  TextColumn get description => text()();
+  IntColumn get amount => integer()();
+  TextColumn get payerId => text()();
+  TextColumn get targetIds => text()();
+  DateTimeColumn get createdAt => dateTime()();
+  DateTimeColumn get updatedAt => dateTime()();
+  DateTimeColumn get deletedAt => dateTime().nullable()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
