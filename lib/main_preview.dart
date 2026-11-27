@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -14,6 +16,8 @@ import 'features/photo/application/photo_providers.dart';
 import 'features/photo/data/in_memory_photo.dart';
 import 'features/point/application/point_providers.dart';
 import 'features/settings/application/settings_providers.dart';
+import 'features/species/application/species_providers.dart';
+import 'features/species/domain/rule_book.dart';
 import 'features/settings/domain/data_eraser.dart';
 import 'features/settings/data/settings_repositories.dart';
 import 'features/share/application/share_providers.dart';
@@ -113,6 +117,54 @@ Future<void> main() async {
     tracks.clear();
   });
 
+  // 미리보기용 예시 규칙 데이터. 실제 낚시 정보가 아니라 화면을 보기 위한 가짜 값이다.
+  final month = now.month;
+  int wrap(int m) => ((m - 1) % 12 + 12) % 12 + 1;
+  final sampleBook = RuleBook.parse(
+    speciesRuleJson: jsonEncode({
+      'version': 1,
+      'species': [
+        {'code': 'PV-A', 'name_ko': '예시 어종 가'},
+        {'code': 'PV-B', 'name_ko': '예시 어종 나'},
+        {'code': 'PV-C', 'name_ko': '예시 어종 다'},
+      ],
+      'rules': [
+        {
+          'species': 'PV-A',
+          'regions': ['PV-1'],
+          'months': [wrap(month - 1), month, wrap(month + 1)],
+          'peak_months': [month],
+          'genres': ['lure'],
+          'note': '미리보기용 예시 데이터',
+        },
+        {
+          'species': 'PV-B',
+          'regions': ['PV-1'],
+          'months': [month],
+          'peak_months': [],
+          'genres': ['cast'],
+        },
+        {
+          'species': 'PV-C',
+          'regions': ['PV-1'],
+          'months': [wrap(month + 6)], // 이번 달이 아님 → 추천에서 빠진다
+          'peak_months': [],
+          'genres': ['lure'],
+        },
+      ],
+    }),
+    regionJson: jsonEncode({
+      'version': 1,
+      'regions': [
+        {
+          'code': 'PV-1',
+          'name_ko': '예시 해역',
+          'center': {'lat': 35.0779, 'lng': 129.0868},
+        },
+      ],
+    }),
+  );
+
   runApp(ProviderScope(
     overrides: [
       catchLogRepositoryProvider.overrideWithValue(repo),
@@ -126,6 +178,7 @@ Future<void> main() async {
       permissionServiceProvider.overrideWithValue(_PreviewPermissionService()),
       trackRepositoryProvider.overrideWithValue(tracks),
       locationSourceProvider.overrideWithValue(SimulatedLocationSource()),
+      ruleBookProvider.overrideWith((ref) => sampleBook),
       backupRepositoryProvider.overrideWithValue(_PreviewBackupRepository()),
       backupFileGatewayProvider.overrideWithValue(_PreviewBackupGateway()),
       photoRepositoryProvider.overrideWithValue(photoRepo),

@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../application/species_providers.dart';
+import 'rule_picks_card.dart';
 import '../domain/species_catalog.dart';
 import '../domain/species_stats.dart';
 
@@ -26,6 +27,7 @@ class SpeciesScreen extends ConsumerWidget {
             const SizedBox(height: 4),
             const Text('앞뒤 한 달, 해마다의 기록을 합쳐서 보여 드려요.'),
             const SizedBox(height: 12),
+            const RulePicksCard(),
             if (stats.isEmpty)
               const Padding(
                 padding: EdgeInsets.symmetric(vertical: 32),
