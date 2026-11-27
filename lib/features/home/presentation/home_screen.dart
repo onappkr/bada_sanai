@@ -7,7 +7,9 @@ import '../../catch_log/application/catch_log_providers.dart';
 import '../../catch_log/domain/catch_log_models.dart';
 import '../../catch_log/presentation/date_format.dart';
 import '../../point/application/point_providers.dart';
+import '../../species/application/species_providers.dart';
 import '../../species/domain/species_catalog.dart';
+import '../../species/domain/species_stats.dart';
 import '../../tracking/application/tracking_providers.dart';
 import '../../tracking/domain/track_recorder.dart';
 
@@ -84,13 +86,7 @@ class HomeScreen extends ConsumerWidget {
                 : Column(children: [for (final l in items) _LogTile(log: l)]),
           ),
           const SizedBox(height: 16),
-          const Card(
-            child: ListTile(
-              leading: Icon(Icons.waves),
-              title: Text('물때·날씨·추천 어종'),
-              subtitle: Text('오늘의 물때와 날씨, 이 시기에 잘 나오는 어종을 곧 보여 드릴게요.'),
-            ),
-          ),
+          _SeasonCard(top: ref.watch(speciesRankingProvider).value),
         ],
       ),
     );
@@ -162,6 +158,29 @@ class _LogTile extends StatelessWidget {
       ),
       trailing: const Icon(Icons.chevron_right),
       onTap: () => context.push(Routes.logDetailOf(log.id)),
+    );
+  }
+}
+
+/// 이 시기에 내가 잡은 어종 상위 3종 요약. 누르면 S13으로 간다.
+class _SeasonCard extends StatelessWidget {
+  const _SeasonCard({required this.top});
+
+  final List<SpeciesStat>? top;
+
+  @override
+  Widget build(BuildContext context) {
+    final names = top?.take(3).map((e) => speciesLabel(e.speciesCode)).toList() ?? const [];
+    return Card(
+      child: ListTile(
+        leading: const Icon(Icons.set_meal_outlined),
+        title: Text('${DateTime.now().month}월 전후 내 어종'),
+        subtitle: Text(names.isEmpty
+            ? '이 시기에 남긴 조과가 아직 없어요'
+            : names.join(' · ')),
+        trailing: const Icon(Icons.chevron_right),
+        onTap: () => context.push(Routes.species),
+      ),
     );
   }
 }

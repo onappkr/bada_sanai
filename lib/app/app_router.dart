@@ -13,6 +13,7 @@ import '../features/tracking/presentation/tracking_screen.dart';
 import '../features/settings/presentation/onboarding_screen.dart';
 import '../features/settings/presentation/settings_screen.dart';
 import '../features/share/presentation/share_sheet_screen.dart';
+import '../features/species/presentation/species_screen.dart';
 import '../features/share/presentation/shared_point_screen.dart';
 import '../features/point/presentation/point_detail_screen.dart';
 import '../features/point/presentation/point_form_screen.dart';
@@ -158,7 +159,7 @@ GoRouter createRouter({
         GoRoute(
           path: Routes.species,
           parentNavigatorKey: _rootKey,
-          builder: (c, s) => _ph('S13', '어종 추천', '현재 해역·날짜 기준 어종 순위'),
+          builder: (c, s) => const SpeciesScreen(),
         ),
         GoRoute(
           path: Routes.forecast,
