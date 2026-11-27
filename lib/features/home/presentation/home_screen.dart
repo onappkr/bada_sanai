@@ -90,6 +90,7 @@ class HomeScreen extends ConsumerWidget {
           const SizedBox(height: 16),
           const _ForecastCard(),
           _SeasonCard(top: ref.watch(speciesRankingProvider).value),
+          const _InsightsCard(),
         ],
       ),
     );
@@ -254,6 +255,24 @@ class _ForecastCard extends StatelessWidget {
         subtitle: const Text('내 위치 근처 해역의 물때, 파고, 바람, 수온'),
         trailing: const Icon(Icons.chevron_right),
         onTap: () => context.push(Routes.forecast),
+      ),
+    );
+  }
+}
+
+/// 내 기록 분석(시간대·시기·포인트별 성적과 지금 가기 좋은 곳)으로 가는 카드.
+class _InsightsCard extends StatelessWidget {
+  const _InsightsCard();
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: ListTile(
+        leading: const Icon(Icons.insights_outlined),
+        title: const Text('내 기록 분석'),
+        subtitle: const Text('어느 시간대·시기·곳에서 잘 잡혔는지 봐요'),
+        trailing: const Icon(Icons.chevron_right),
+        onTap: () => context.push(Routes.insights),
       ),
     );
   }

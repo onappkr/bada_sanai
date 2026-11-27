@@ -19,6 +19,7 @@ abstract final class Routes {
   static const trackDetail = '/tracks/:id'; // 저장된 경로 상세
   static const species = '/species'; // S13
   static const forecast = '/forecast'; // S14
+  static const insights = '/insights'; // 3차: 내 기록 분석
   static const share = '/share/:pointId'; // S15
   static const sharedPoint = '/p'; // S16 (딥링크: 데이터는 fragment)
   static const settings = '/settings'; // S17
