@@ -18,6 +18,7 @@ class DriftBackupRepository implements BackupRepository {
       points: await _db.select(_db.points).get(),
       logs: await _db.select(_db.catchLogs).get(),
       items: await _db.select(_db.catchItems).get(),
+      photos: await _db.select(_db.photos).get(),
     );
   }
 
@@ -70,7 +71,22 @@ class DriftBackupRepository implements BackupRepository {
           await _db.into(_db.catchItems).insert(i);
         }
       }
-      return RestoreResult(added: added, updated: updated, skipped: skipped);
+      // 3) 사진. 같은 id가 이미 있으면 그대로 두고, 주인(일지·포인트)이 있는 것만 연결한다.
+      final logIds = (await _db.select(_db.catchLogs).get()).map((e) => e.id).toSet();
+      var photosAdded = 0;
+      for (final ph in s.photos) {
+        final ownerExists = ph.ownerType == OwnerType.log
+            ? logIds.contains(ph.ownerId)
+            : pointIds.contains(ph.ownerId);
+        if (!ownerExists) continue;
+        final cur = await (_db.select(_db.photos)..where((t) => t.id.equals(ph.id)))
+            .getSingleOrNull();
+        if (cur != null) continue;
+        await _db.into(_db.photos).insert(ph);
+        photosAdded++;
+      }
+      return RestoreResult(
+          added: added, updated: updated, skipped: skipped, photosAdded: photosAdded);
     });
   }
 }

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
@@ -221,12 +222,12 @@ class _PreviewBackupRepository implements BackupRepository {
 
 class _PreviewBackupGateway implements BackupFileGateway {
   @override
-  Future<void> export(String filename, String json) async {}
+  Future<void> export(String filename, Uint8List bytes, String mimeType) async {}
 
   @override
-  Future<String?> pick() async =>
+  Future<Uint8List?> pick() async => Uint8List.fromList(utf8.encode(
       '{"app":"bada_sanai","version":1,"exportedAt":"2026-11-27T00:00:00Z",'
-      '"points":[],"logs":[],"items":[]}';
+      '"points":[],"logs":[],"items":[]}'));
 }
 
 /// 미리보기용 권한 가짜: 위치는 허용 가능, 알림은 허용됨, 카메라는 설정에서만 바꿀 수 있는 상태.

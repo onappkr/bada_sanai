@@ -38,8 +38,9 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
         final snap = await exportBackup(
           ref.read(backupRepositoryProvider),
           ref.read(backupFileGatewayProvider),
+          photoFiles: ref.read(backupPhotoFilesProvider),
         );
-        _toast('일지 ${snap.liveLogCount}건, 포인트 ${snap.livePointCount}개를 백업 파일로 만들었어요.');
+        _toast('일지 ${snap.liveLogCount}건, 포인트 ${snap.livePointCount}개, 사진 ${snap.photos.length}장을 백업 파일로 만들었어요.');
       });
 
   Future<void> _restore() async {
@@ -52,7 +53,7 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
           '• 없는 항목은 추가해요.\n'
           '• 같은 항목은 더 최근에 고친 쪽을 남겨요.\n'
           '• 지금 데이터를 지우지는 않아요.\n'
-          '사진은 백업에 들어 있지 않아요.',
+          '사진도 함께 들어 있으면 같이 가져와요.',
         ),
         actions: [
           TextButton(onPressed: () => Navigator.pop(c, false), child: const Text('취소')),
@@ -65,9 +66,10 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
       final r = await restoreBackup(
         ref.read(backupRepositoryProvider),
         ref.read(backupFileGatewayProvider),
+        photoFiles: ref.read(backupPhotoFilesProvider),
       );
       if (r == null) return; // 파일 선택 취소
-      _toast('복원했어요. 추가 ${r.added}, 갱신 ${r.updated}, 건너뜀 ${r.skipped}');
+      _toast('복원했어요. 추가 ${r.added}, 갱신 ${r.updated}, 건너뜀 ${r.skipped}, 사진 ${r.photosAdded}장');
     });
   }
 
@@ -86,7 +88,7 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
             child: ListTile(
               leading: const Icon(Icons.upload_file),
               title: const Text('백업 파일 만들기'),
-              subtitle: const Text('일지·포인트를 파일로 만들어 드라이브나 메신저에 보관해요'),
+              subtitle: const Text('일지·포인트·사진을 파일로 만들어 드라이브나 메신저에 보관해요'),
               onTap: _busy ? null : _export,
             ),
           ),
@@ -94,7 +96,7 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
             child: ListTile(
               leading: const Icon(Icons.restore),
               title: const Text('백업에서 복원'),
-              subtitle: const Text('백업 파일을 골라 지금 데이터와 합쳐요'),
+              subtitle: const Text('백업 파일(zip 또는 예전 json)을 골라 지금 데이터와 합쳐요'),
               onTap: _busy ? null : _restore,
             ),
           ),
@@ -106,7 +108,7 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
           const SizedBox(height: 24),
           Text('알아두세요', style: text.titleSmall),
           const SizedBox(height: 4),
-          const Text('• 사진은 용량 때문에 백업에 들어 있지 않아요.\n'
+          const Text('• 사진이 많으면 파일이 커질 수 있어요(사진 한 장은 보통 400KB 이하).\n'
               '• 백업 파일에는 위치 정보가 그대로 들어 있으니 믿을 수 있는 곳에만 보관하세요.'),
         ],
       ),

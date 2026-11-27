@@ -41,6 +41,7 @@ flutter build web -t lib/main_preview.dart   # 화면 미리보기(아래 참고
 - 물때·날씨(S14): `forecast/domain/forecast_service.dart`가 가까운 해역(50km 이내) 확인 → 항목별 캐시(날씨 3h·조석 24h·수온 6h) → 원천 호출(8초 제한, 1회 재시도) → 실패하면 만료된 캐시를 `stale`로 반환한다. **예보 원천(`ForecastSource`)의 실제 공공 API 어댑터는 없고** 기본값 `NoForecastSource`가 "연동 준비 중"을 보여 준다. 어댑터를 만들면 `forecastSourceProvider`만 바꿔 끼우면 된다. 해역의 관측소 ID·격자 좌표는 `region.json`에서 읽는다.
 - 일지 환경 자동 기록(B5): `catch_log/domain/log_environment.dart`. 새 일지를 열면 백그라운드로 위치(권한 창을 띄우지 않는 `passiveLocationSourceProvider`)와 예보를 모아 두고, 저장할 때 **낚시한 시각이 지금과 3시간 이내일 때만** 붙인다(지난 일지에 오늘 날씨를 붙이면 틀리므로). 위치는 `catch_logs.lat/lng`, 예보는 `env` JSON에 저장하고, 수정할 때 환경을 주지 않으면 저장된 값을 유지한다.
 - 공유 링크: `share/data/share_link_codec.dart`(JSON → raw deflate → base64url, `#v=1&d=...`)는 `web_viewer/codec.js`와 **같은 형식**이어야 한다. 형식을 바꾸면 `v`를 올리고 양쪽을 함께 고친다. 압축은 웹에서도 돌도록 `dart:io` 대신 `archive` 패키지를 쓴다.
+- 백업: `backup/domain/backup_archive.dart`가 zip(`backup.json` + `photos/*`)을 만들고 읽는다(경로 탈출·용량 검증). 기록 형식은 `backup_codec.dart` v2(`photos` 메타데이터 추가, v1 JSON도 복원 가능). 복원은 id별 최신 병합이고 사진은 기기에 같은 id가 없고 주인이 있고 파일이 있을 때만 연결한다. 사진 파일 접근은 `BackupPhotoFiles` 포트(어댑터는 `PhotoStore`).
 - 사진: DB에는 상대 경로만, 파일은 앱 문서 폴더 `photos/`. 작성 화면에서 고른 사진은 저장 버튼을 누를 때에야 파일로 기록한다.
 
 ## 화면 미리보기
